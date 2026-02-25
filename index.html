@@ -1,68 +1,294 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Basic Website</title>
-
-  <!-- Describe your page — shows up in search results and browser tabs -->
   <meta name="description" content="A short description of your page goes here.">
 
-  <!-- Your styles -->
-  <link rel="stylesheet" href="styles.css">
-
   <style>
-    /* Keyboard users need to see where focus is */
+    :root{
+      /* You can tweak these to your brand */
+      --header: #c46b6b;            /* red band */
+      --sidebar: #7066d0;           /* blue menu */
+      --window: #4a4a4a;            /* dark grey content window */
+      --footer: #4a4a4a;            /* grey footer */
+      --text-on-dark: #ffffff;
+      --page-bg: #ffffff;
+      --focus: #111827;
+    }
+
+    /* Reset-ish */
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body { background: var(--page-bg); color: #111; font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+
+    /* Keyboard users should see focus */
     :focus-visible {
-      outline: 2px solid currentColor;
+      outline: 2px solid var(--focus);
       outline-offset: 2px;
     }
 
-    /* Respect users who prefer less motion */
+    /* Respect "reduce motion" */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
       }
+    }
+
+    /* --- Layout grid ----------------------------------------------------- */
+    .layout {
+      min-height: 100svh;                    /* supports mobile toolbars */
+      display: grid;
+      grid-template-columns: 240px 1fr;      /* sidebar | main */
+      grid-template-rows: auto 1fr auto;     /* header | content | footer */
+      grid-template-areas:
+        "header  header"
+        "sidebar main"
+        "footer  footer";
+    }
+
+    header {
+      grid-area: header;
+      background: var(--header);
+      color: var(--text-on-dark);
+      padding: 1rem 1.25rem;
+    }
+    header .title { margin: 0; font-size: clamp(1.25rem, 2.5vw, 1.75rem); }
+
+    nav[aria-label="Primary"] {
+      grid-area: sidebar;
+      background: var(--sidebar);
+      color: var(--text-on-dark);
+      padding: 0.75rem;
+    }
+    .menu {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .menu a {
+      display: block;
+      color: var(--text-on-dark);
+      text-decoration: none;
+      padding: 0.65rem 0.75rem;
+      border-radius: 6px;
+      transition: background-color .15s ease;
+    }
+    .menu a:hover { background: rgba(255,255,255,0.13); }
+    .menu a[aria-current="page"] { background: rgba(0,0,0,0.18); font-weight: 600; }
+
+    main {
+      grid-area: main;
+      padding: clamp(0.75rem, 2vw, 1.25rem);
+      display: grid;
+      place-items: start center; /* centers the grey window horizontally */
+    }
+
+    /* The “grey box” content window — 4:3 like a CRT */
+.content-window {
+  /* sizing */
+  width: min(820px, 92%);      /* keeps it from getting too wide */
+  aspect-ratio: 4 / 3;         /* <<< forces 4:3 ratio */
+  /* remove min-height so aspect ratio controls the height */
+  /* min-height: 260px;  -- remove this line if present */
+
+  /* visuals */
+  background: var(--window);
+  color: var(--text-on-dark);
+  border-radius: 16px;          /* CRT-ish rounded corners */
+  border: 4px solid rgba(255,255,255,0.06);
+  box-shadow:
+    inset 0 0 40px rgba(0,0,0,0.35),   /* inner glow like a screen */
+    0 10px 30px rgba(0,0,0,0.18);      /* outer drop shadow */
+  padding: clamp(1rem, 2.2vw, 1.5rem);
+  position: relative;
+  overflow: hidden;             /* keeps inner effects clipped to the bezel */
+}
+
+/* Optional: very subtle scanlines effect (can be removed) */
+.content-window::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.04),
+      rgba(255,255,255,0.04) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  background-size: 100% 4px;    /* thin scanline spacing */
+  mix-blend-mode: soft-light;
+  opacity: 0.35;
+}
+
+/* Tweak typography inside the window */
+.content-window h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+}
+.content-window p { margin: 0.25rem 0; color: #f3f4f6; }
+
+/* Mobile: keep full width; height follows 4:3 */
+@media (max-width: 800px) {
+  .content-window { width: 100%; }
+}
+
+    .content-window h2 {
+      margin: 0 0 0.5rem 0;
+      font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+    }
+    .content-window p { margin: 0.25rem 0; color: #f3f4f6; }
+
+    footer {
+      grid-area: footer;
+      background: var(--footer);
+      color: var(--text-on-dark);
+      padding: 1rem 1.25rem;
+    }
+    footer small { opacity: 0.9; }
+
+    /* --- Responsive: collapse sidebar to top bar on narrow screens ------- */
+    @media (max-width: 800px) {
+      .layout {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "header"
+          "sidebar"
+          "main"
+          "footer";
+      }
+      nav[aria-label="Primary"] {
+        padding: 0.5rem;
+        overflow-x: auto;
+      }
+      .menu {
+        flex-direction: row;
+        gap: 0.5rem;
+      }
+      .menu a { white-space: nowrap; }
+      main { place-items: start stretch; }
+      .content-window { width: 100%; }
     }
   </style>
 </head>
 <body>
+  <div class="layout">
+    <header>
+      <h1 class="title">Basic Website</h1>
+    </header>
 
-  <header>
-    <h1 class="title">Basic Website</h1>
-  </header>
+    <nav aria-label="Primary">
+      <ul class="menu" role="list">
+        <li><a href="#home"     data-view="home"     aria-current="page">Home</a></li>
+        <li><a href="#about"    data-view="about">About</a></li>
+        <li><a href="#projects" data-view="projects">Projects</a></li>
+        <li><a href="#contact"  data-view="contact">Contact</a></li>
+      </ul>
+    </nav>
 
-  <nav aria-label="Primary">
-    <ul>
-      <li><a href="#" aria-current="page">Home</a></li>
-    </ul>
-  </nav>
+    <main id="main-content">
+      <section class="content-window" id="panel" tabindex="-1" aria-live="polite" aria-atomic="true">
+        <!-- JS will render the selected view here -->
+        <h2>Loading…</h2>
+        <p>Please wait.</p>
+      </section>
+    </main>
 
-  <main id="main-content">
-    <div class="underline" aria-hidden="true"></div>
-    <p>Your content goes here.</p>
-    <button class="main-button" id="myButton" type="button">Button</button>
-  </main>
-
-  <footer>
-    <small>&copy; <span id="year"></span> Your Name</small>
-  </footer>
+    <footer>
+      <small>&copy; <span id="year"></span> Your Name &middot; Contact: hello@example.com</small>
+    </footer>
+  </div>
 
   <script>
     // Keep the copyright year current automatically
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    const btn = document.getElementById('myButton');
-    if (btn) {
-      btn.addEventListener('click', () => {
-        alert('Button clicked');
+    // Simple client-side “views”
+    const VIEWS = {
+      home: `
+        <h2>Welcome</h2>
+        <p>This is the home view. Use the menu to switch sections.</p>
+        <p>You can put hero text or quick links here.</p>
+      `,
+      about: `
+        <h2>About</h2>
+        <p>Write a short intro about the site or yourself.</p>
+        <ul>
+          <li>Mission</li>
+          <li>Background</li>
+          <li>What’s unique</li>
+        </ul>
+      `,
+      projects: `
+        <h2>Projects</h2>
+        <p>Showcase a few items with links, screenshots, or case studies.</p>
+        <p>Tip: Cards or a grid look nice inside this window.</p>
+      `,
+      contact: `
+        <h2>Contact</h2>
+        <p>Drop a line at <a href="mailto:hello@example.com">hello@example.com</a> or via socials.</p>
+        <p>Add a small form here later if you like.</p>
+      `
+    };
+
+    const panel = document.getElementById('panel');
+    const menuLinks = Array.from(document.querySelectorAll('.menu a[data-view]'));
+
+    function setActive(view) {
+      menuLinks.forEach(a => {
+        const isActive = a.dataset.view === view;
+        if (isActive) {
+          a.setAttribute('aria-current', 'page');
+        } else {
+          a.removeAttribute('aria-current');
+        }
       });
     }
+
+    function render(view) {
+      const html = VIEWS[view] || `<h2>Not found</h2><p>That section does not exist.</p>`;
+      panel.innerHTML = html;
+      setActive(view);
+      // Move focus to the content window for accessibility
+      panel.focus({ preventScroll: false });
+    }
+
+    // Handle clicks on the nav (no page reload)
+    document.querySelector('nav[aria-label="Primary"]').addEventListener('click', (e) => {
+      const a = e.target.closest('a[data-view]');
+      if (!a) return;
+      e.preventDefault();
+      const view = a.dataset.view;
+      const newHash = '#' + view;
+      if (location.hash !== newHash) {
+        history.pushState({ view }, '', newHash);
+      }
+      render(view);
+    });
+
+    // Handle back/forward
+    window.addEventListener('popstate', (e) => {
+      const view = (e.state && e.state.view) || location.hash.replace('#','') || 'home';
+      render(view);
+    });
+
+    // Initial render from hash or default to home
+    (function init(){
+      const initial = location.hash.replace('#','') || 'home';
+      // seed history so back works consistently
+      history.replaceState({ view: initial }, '', '#' + initial);
+      render(initial);
+    })();
   </script>
-
-  <!-- Your scripts -->
-  <script src="script.js"></script>
-
 </body>
 </html>
