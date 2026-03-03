@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact — Riku Darroch</title>
+  <meta name="description" content="Contact Riku Darroch for projects, collaborations, or portfolio reviews." />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; } }
+  </style>
+</head>
+<body>
+
+<div class="bg-image" aria-hidden="true"></div>
+<div class="bg-blur" aria-hidden="true"></div>
+
+  <a class="skip-link" href="#main-content">Skip to content</a>
+<!-- Background image layer (behind everything) -->
+<div class="bg-image" aria-hidden="true"></div>
+
+<!-- Global blur veil (above image, below content) -->
+<div class="bg-blur" aria-hidden="true"></div>
+  <header class="site-header" role="banner">
+    <div class="container">
+      <a class="brand" href="index.html" aria-label="Home">
+        <span class="brand-mark" aria-hidden="true">RD</span>
+        <span class="brand-name">Riku Darroch</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Primary">
+        <button class="nav-toggle" aria-expanded="false" aria-controls="primary-menu">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="hamburger" aria-hidden="true"></span>
+        </button>
+        <ul id="primary-menu">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="artworks.html">Artworks</a></li>
+          <li><a href="game-design.html">Game Design</a></li>
+          <li><a href="graphic-design.html">Graphic Design</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a class="nav-link--cta" href="contact.html" aria-current="page">Contact</a></li> <!-- active CTA here -->
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="contact" aria-labelledby="contact-title">
+      <div class="container">
+        <h1 id="contact-title">Contact</h1>
+        <p class="section-intro">For projects, collaborations, or portfolio reviews—say hello.</p>
+
+        <!-- Replace action with your form handler -->
+        <form class="contact-form" action="https://example.com/form" method="post">
+          <div class="form-row">
+            <label for="name">Name</label>
+            <input id="name" name="name" autocomplete="name" required />
+          </div>
+
+          <div class="form-row">
+            <label for="email">Email</label>
+            <input id="email" type="email" name="email" autocomplete="email" required />
+          </div>
+
+          <div class="form-row">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="6" required></textarea>
+          </div>
+
+          <button class="button primary" type="submit">Send message</button>
+        </form>
+
+        <ul class="contact-links" aria-label="Social links">
+          <li><a href="mailto:hello@yourdomain.com">hello@yourdomain.com</a></li>
+          <li><a href="https://www.linkedin.com/in/yourhandle" rel="me external" target="_blank">LinkedIn</a></li>
+          <li><a href="https://www.dribbble.com/yourhandle" rel="me external" target="_blank">Dribbble</a></li>
+          <li><a href="https://www.behance.net/yourhandle" rel="me external" target="_blank">Behance</a></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <small>&copy; <span id="year"></span> Riku Darroch</small>
+      <nav aria-label="Footer">
+        <ul class="footer-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="artworks.html">Artworks</a></li>
+          <li><a href="game-design.html">Game Design</a></li>
+          <li><a href="graphic-design.html">Graphic Design</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a class="nav-link--cta" href="contact.html" aria-current="page">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const toggle = document.querySelector('.nav-toggle');
+    const menu = document.getElementById('primary-menu');
+    if (toggle && menu) {
+      toggle.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!expanded));
+        menu.classList.toggle('open', !expanded);
+      });
+    }
+  </script>
+</body>
+</html>

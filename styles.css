@@ -1,43 +1,169 @@
-body {
-  margin: 0;
-  padding: 40px;
-  font-family: Arial, sans-serif;
-  background: #fcf8f6;
+
+/*
+  styles.css — Dusk Bebop GLASS (Lower-Blur) Theme
+  Change request: dial Gaussian blur DOWN for background veil + glass panels.
+  - Background photo behind everything
+  - Softer blur veil (from 20px → 14px)
+  - Glass panels reduced (22/26/20px → 16/18/14px)
+  - Corner lens refraction reduced (32px → 22px)
+  - No film grain, no logo glow
+  Image file: AA592C54-6F62-449D-886C-AB0933FF5377-3468-000000D1F13F3296.jpg
+*/
+
+/* =============================
+   1) Tokens (solid poster tones)
+   ============================= */
+:root{
+  --ink-900:#07090d;    --ink-800:#0b1120;    --ink-700:#101a33;    --ink-600:#162449;
+  --text-100:#f8fbff;   --text-200:#cddcf3;   --text-300:#a9bbd3;
+  --moon:#f1e6c7;       --cyan:#00e0ff;       --teal:#5fe3c9;       --coral:#ff5470;
+  --line-1:#283a60;     --line-0:#1f2c49;
+  --radius:14px; --radius-lg:22px;
+  --shadow-0:0 10px 24px rgba(0,0,0,.30);
+  --shadow-1:0 20px 48px rgba(0,0,0,.40);
+  --max-w:1180px;
+  --space-1:.25rem; --space-2:.5rem; --space-3:.75rem; --space-4:1rem; --space-5:1.5rem; --space-6:2rem; --space-7:3rem; --space-8:4.5rem;
+  --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Inter, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+@media (prefers-color-scheme: dark){ :root{ color-scheme: dark; } }
+
+/* =============================
+   2) Base
+   ============================= */
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{ margin:0; font-family:var(--font); line-height:1.6; color:var(--text-100); background: var(--ink-800); position:relative; overflow-x:hidden; }
+img{ display:block; max-width:100%; height:auto; border-radius:calc(var(--radius) - 4px); }
+a{ color:inherit; text-decoration:none; }
+p{ color:var(--text-200); }
+
+h1,h2,h3{ line-height:1.2; margin:0 0 var(--space-4); color:var(--text-100); }
+.lead{ font-size:1.15rem; color:var(--text-100); }
+.muted{ color:var(--text-300); }
+
+.container{ width:100%; max-width:var(--max-w); margin-inline:auto; padding:0 var(--space-5); position:relative; z-index:3; }
+.grid{ display:grid; gap:var(--space-6); }
+
+:focus-visible{ outline:2px solid var(--cyan); outline-offset:3px; }
+.skip-link{ position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden; z-index:10; }
+.skip-link:focus-visible{ left:var(--space-4); top:var(--space-4); padding:var(--space-3) var(--space-4); background:var(--cyan); color:#001018; border-radius:8px; font-weight:800; }
+
+/* =============================
+   3) Background layers
+   ============================= */
+.bg-image{
+  position:fixed; inset:0; z-index:0;
+  background-image:url('AA592C54-6F62-449D-886C-AB0933FF5377-3468-000000D1F13F3296.jpg');
+  background-size:cover; background-position:center 40%; background-repeat:no-repeat; transform:translateZ(0);
+}
+.bg-blur{
+  position:fixed; inset:0; z-index:1;
+  background-color: rgba(5, 10, 20, .30);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
-/* Title */
-.title {
-  color: #15267a;
-  margin-bottom: 4px;
-  font-weight: 500;
+/* =============================
+   4) Glass system (reduced blur) + corner refraction
+   ============================= */
+.glass{
+  position: relative; background-color: rgba(16, 26, 51, .36);
+  border: 1px solid rgba(255,255,255,.18); border-radius: var(--radius-lg,22px);
+  box-shadow: var(--shadow-0);
+  backdrop-filter: blur(16px) saturate(145%) contrast(110%);
+  -webkit-backdrop-filter: blur(16px) saturate(145%) contrast(110%);
+}
+.glass--heavy{ backdrop-filter: blur(18px) saturate(155%) contrast(112%); -webkit-backdrop-filter: blur(18px) saturate(155%) contrast(112%); }
+
+.glass::before{
+  content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  -webkit-mask:
+    radial-gradient(30px 30px at 16px 16px, #000 96%, transparent 100%),
+    radial-gradient(30px 30px at calc(100% - 16px) 16px, #000 96%, transparent 100%),
+    radial-gradient(30px 30px at 16px calc(100% - 16px), #000 96%, transparent 100%),
+    radial-gradient(30px 30px at calc(100% - 16px) calc(100% - 16px), #000 96%, transparent 100%);
+  mask:
+    radial-gradient(30px 30px at 16px 16px, #000 96%, transparent 100%),
+    radial-gradient(30px 30px at calc(100% - 16px) 16px, #000 96%, transparent 100%),
+    radial-gradient(30px 30px at 16px calc(100% - 16px), #000 96%, transparent 100%),
+    radial-gradient(30px 30px at calc(100% - 16px) calc(100% - 16px), #000 96%, transparent 100%);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06), inset 0 0 28px rgba(255,255,255,.05);
+}
+.glass::after{ content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit; border:1px solid rgba(255,255,255,.08); clip-path: inset(1px round calc(var(--radius-lg,22px) - 1px)); opacity:.9; }
+
+/* =============================
+   5) Header / Nav — glass, no glow
+   ============================= */
+.site-header{
+  position:sticky; top:0; z-index:5;
+  background-color: rgba(16, 26, 51, .30);
+  border-bottom:1px solid rgba(255,255,255,.14);
+  backdrop-filter: blur(16px) saturate(145%) contrast(108%);
+  -webkit-backdrop-filter: blur(16px) saturate(145%) contrast(108%);
+}
+.site-header .container{ display:flex; align-items:center; justify-content:space-between; padding:1.0rem var(--space-5); }
+.brand{ display:flex; align-items:center; gap:.9rem; text-decoration:none; }
+.brand-mark{ display:inline-grid; place-content:center; width:56px; height:56px; border-radius:14px; background:var(--moon); color:#0a101a; font-weight:900; font-size:1.05rem; border:1px solid rgba(255,255,255,.22); box-shadow: 0 8px 20px rgba(0,0,0,.25); }
+.brand-name{ color:var(--text-100); font-size:1.22rem; font-weight:800; letter-spacing:.25px; }
+
+.site-nav ul{ list-style:none; display:flex; align-items:center; gap:1.1rem; margin:0; padding:0; }
+.site-nav a{ display:inline-block; padding:.55rem .9rem; line-height:1; border-radius:10px; color:var(--text-300); border:1px solid transparent; }
+.site-nav a:hover, .site-nav a:focus-visible{ color:var(--text-100); background-color: rgba(22,36,73,.40); border-color: rgba(255,255,255,.16); box-shadow: 0 6px 16px rgba(0,0,0,.22); }
+.site-nav a[aria-current="page"]{ color:#061018; background-color: var(--moon); border-color: var(--moon); }
+
+.nav-toggle{ display:none; width:52px; height:52px; border-radius:12px; border:1px solid rgba(255,255,255,.16); background-color: rgba(22,36,73,.40); color:var(--text-100); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.hamburger{ width:22px; height:2px; background:currentColor; position:relative; }
+.hamburger::before,.hamburger::after{ content:""; position:absolute; left:0; width:22px; height:2px; background:currentColor; }
+.hamburger::before{ top:-7px; } .hamburger::after{ top:7px; }
+@media (max-width:900px){
+  .nav-toggle{ display:block; }
+  .site-nav ul{ position:absolute; right:var(--space-5); top: calc(56px + 18px); display:none; flex-direction:column; gap:.7rem; background-color: rgba(16,26,51,.38); border:1px solid rgba(255,255,255,.16); padding:.9rem; border-radius:14px; min-width:230px; backdrop-filter: blur(12px) saturate(135%); -webkit-backdrop-filter: blur(12px) saturate(135%); box-shadow: var(--shadow-1); }
+  .site-nav ul.open{ display:flex; }
+  .site-nav a{ width:100%; }
 }
 
-/* Light underline under the title */
-.underline {
-  width: 200px;
-  height: 2px;
-  background: #d7d7f5;
-  margin-bottom: 50px;
-}
+/* =============================
+   6) Sections
+   ============================= */
+section{ padding: var(--space-8) 0; border-top: 1px solid rgba(255,255,255,.08); }
+.hero{ padding: var(--space-8) 0 var(--space-7); border-top:none; }
+.hero .container{ display:grid; grid-template-columns:1.2fr 1fr; gap: var(--space-7); align-items:center; }
+@media (max-width:960px){ .hero .container{ grid-template-columns:1fr; } }
+.hero-figure img{ border-radius: var(--radius-lg); box-shadow: var(--shadow-1); }
+.hero-cta{ display:flex; gap: var(--space-4); margin-top: var(--space-5); }
 
-/* Centered button */
-.main-button {
-  display: block;
-  margin: 150px auto;
-  padding: 20px 80px;
-  background: #e0fdff;
-  border: 2px solid #c8eaff;
-  border-radius: 10px;
-  font-size: 18px;
-  color: #15267a;
-  cursor: pointer;
+/* =============================
+   7) Cards / Grids — glass panels
+   ============================= */
+.grid-portfolio{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+@media (max-width:900px){ .grid-portfolio{ grid-template-columns:1fr; } }
+.card{ position:relative; overflow:hidden; border-radius: var(--radius-lg); border:1px solid rgba(255,255,255,.18); background-color: rgba(16,26,51,.32); backdrop-filter: blur(14px) saturate(140%) contrast(108%); -webkit-backdrop-filter: blur(14px) saturate(140%) contrast(108%); box-shadow: var(--shadow-0); transition: transform .15s ease, box-shadow .2s ease, background-color .2s ease; }
+.card:hover{ background-color: rgba(16,26,51,.38); transform: translateY(-2px); box-shadow: 0 18px 44px rgba(0,0,0,.40); }
+.card.glass{}
 
-  /* Smooth transition to hover state */
-  transition: background 0.25s ease, border-color 0.25s ease;
-}
+.project-thumb img{ aspect-ratio:16/10; object-fit:cover; }
+.project-meta{ padding: var(--space-5); }
+.project-title{ margin: 0 0 var(--space-2); }
+.project-tags{ color: var(--text-300); font-size:.95rem; margin:0 0 var(--space-2); }
+.project-blurb{ color: var(--text-200); margin:0 0 var(--space-4); }
+.project-cta{ color: var(--teal); font-weight:800; }
 
-/* Hover effect */
-.main-button:hover {
-  background: skyblue;        /* #87CEEB */
-  border-color: mediumPurple; /* #9370DB */
-}
+/* =============================
+   8) Forms — inset glass fields
+   ============================= */
+.contact-form{ display:grid; gap: var(--space-4); max-width: 720px; }
+.form-row{ display:grid; gap:.5rem; }
+input,textarea{ width:100%; padding:.95rem 1rem; border-radius:12px; border:1px solid rgba(255,255,255,.16); background-color: rgba(16,26,51,.32); color:var(--text-100); backdrop-filter: blur(12px) saturate(135%); -webkit-backdrop-filter: blur(12px) saturate(135%); }
+input::placeholder,textarea::placeholder{ color:#8ea0bd; }
+input:focus-visible,textarea:focus-visible{ border-color: var(--cyan); outline-color: var(--cyan); }
+
+/* =============================
+   9) Footer — glass strip
+   ============================= */
+.site-footer{ border-top:1px solid rgba(255,255,255,.10); background-color: rgba(16,26,51,.30); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); padding: var(--space-6) 0; }
+.footer-grid{ display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+.footer-links{ list-style:none; display:flex; align-items:center; gap:1rem; margin:0; padding:0; }
+.footer-links a{ padding:.45rem .65rem; border-radius:8px; border:1px solid transparent; }
+.footer-links a:hover{ background-color: rgba(22,36,73,.36); border-color: rgba(255,255,255,.16); }

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Game Design — Riku Darroch</title>
+  <meta name="description" content="Game design projects by Riku Darroch — systems, prototypes, narrative design, and UX for games." />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; } }
+  </style>
+</head>
+<body>
+
+<div class="bg-image" aria-hidden="true"></div>
+<div class="bg-blur" aria-hidden="true"></div>
+
+  <a class="skip-link" href="#main-content">Skip to content</a>
+<!-- Background image layer (behind everything) -->
+<div class="bg-image" aria-hidden="true"></div>
+
+<!-- Global blur veil (above image, below content) -->
+<div class="bg-blur" aria-hidden="true"></div>
+  <header class="site-header" role="banner">
+    <div class="container">
+      <a class="brand" href="index.html" aria-label="Home">
+        <span class="brand-mark" aria-hidden="true">RD</span>
+        <span class="brand-name">Riku Darroch</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Primary">
+        <button class="nav-toggle" aria-expanded="false" aria-controls="primary-menu">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="hamburger" aria-hidden="true"></span>
+        </button>
+        <ul id="primary-menu">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="artworks.html">Artworks</a></li>
+          <li><a href="game-design.html" aria-current="page">Game Design</a></li>
+          <li><a href="graphic-design.html">Graphic Design</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="work" aria-labelledby="gd-title">
+      <div class="container">
+        <h1 id="gd-title">Game Design</h1>
+        <p class="section-intro">Systems, prototypes, narrative, UX for games. Selected design-led work.</p>
+
+        <div class="grid grid-portfolio">
+          <!-- Example cards (replace with your projects) -->
+          <article class="card project">
+            <a class="project-link" href="projects/game-design/gd-01.html">
+              <figure class="project-thumb">
+                <img src="images/game-design/gd-01-thumb.jpg" alt="Narrative RPG prototype thumbnail." loading="lazy" />
+              </figure>
+              <div class="project-meta">
+                <h3 class="project-title">Narrative RPG Prototype</h3>
+                <p class="project-tags">Systems · Narrative · Prototyping</p>
+                <p class="project-blurb">Player choice, dynamic encounters, reactive world design.</p>
+                <span class="project-cta">View project →</span>
+              </div>
+            </a>
+          </article>
+
+          <article class="card project">
+            <a class="project-link" href="projects/game-design/gd-02.html">
+              <figure class="project-thumb">
+                <img src="images/game-design/gd-02-thumb.jpg" alt="Combat system exploration thumbnail." loading="lazy" />
+              </figure>
+              <div class="project-meta">
+                <h3 class="project-title">Combat System Exploration</h3>
+                <p class="project-tags">Systems · Tuning · UX</p>
+                <p class="project-blurb">Balancing depth and clarity through iterative tuning and flows.</p>
+                <span class="project-cta">View project →</span>
+              </div>
+            </a>
+          </article>
+
+          <article class="card project">
+            <a class="project-link" href="projects/game-design/gd-03.html">
+              <figure class="project-thumb">
+                <img src="images/game-design/gd-03-thumb.jpg" alt="Onboarding and tutorialization thumbnail." loading="lazy" />
+              </figure>
+              <div class="project-meta">
+                <h3 class="project-title">Onboarding & Tutorialization</h3>
+                <p class="project-tags">UX · IA · Writing</p>
+                <p class="project-blurb">Reducing friction in early funnels with progressive disclosure.</p>
+                <span class="project-cta">View project →</span>
+              </div>
+            </a>
+          </article>
+
+          <article class="card project">
+            <a class="project-link" href="projects/game-design/gd-04.html">
+              <figure class="project-thumb">
+                <img src="images/game-design/gd-04-thumb.jpg" alt="HUD/UI for action game thumbnail." loading="lazy" />
+              </figure>
+              <div class="project-meta">
+                <h3 class="project-title">HUD/UI for Action Game</h3>
+                <p class="project-tags">UI/UX · Accessibility</p>
+                <p class="project-blurb">Readable, reactive HUD with modular components.</p>
+                <span class="project-cta">View project →</span>
+              </div>
+            </a>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <small>&copy; <span id="year"></span> Riku Darroch</small>
+      <nav aria-label="Footer">
+        <ul class="footer-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="artworks.html">Artworks</a></li>
+          <li><a href="game-design.html" aria-current="page">Game Design</a></li>
+          <li><a href="graphic-design.html">Graphic Design</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const toggle = document.querySelector('.nav-toggle');
+    const menu = document.getElementById('primary-menu');
+    if (toggle && menu) {
+      toggle.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!expanded));
+        menu.classList.toggle('open', !expanded);
+      });
+    }
+  </script>
+</body>
+</html>

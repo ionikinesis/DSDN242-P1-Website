@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Graphic Design — Riku Darroch</title>
+  <meta name="description" content="Graphic design projects by Riku Darroch — branding, posters, UI visual design." />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; } }
+  </style>
+</head>
+<body>
+
+<div class="bg-image" aria-hidden="true"></div>
+<div class="bg-blur" aria-hidden="true"></div>
+
+  <a class="skip-link" href="#main-content">Skip to content</a>
+<!-- Background image layer (behind everything) -->
+<div class="bg-image" aria-hidden="true"></div>
+
+<!-- Global blur veil (above image, below content) -->
+<div class="bg-blur" aria-hidden="true"></div>
+  <header class="site-header" role="banner">
+    <div class="container">
+      <a class="brand" href="index.html" aria-label="Home">
+        <span class="brand-mark" aria-hidden="true">RD</span>
+        <span class="brand-name">Riku Darroch</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Primary">
+        <button class="nav-toggle" aria-expanded="false" aria-controls="primary-menu">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="hamburger" aria-hidden="true"></span>
+        </button>
+        <ul id="primary-menu">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="artworks.html">Artworks</a></li>
+          <li><a href="game-design.html">Game Design</a></li>
+          <li><a href="graphic-design.html" aria-current="page">Graphic Design</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="work" aria-labelledby="gdx-title">
+      <div class="container">
+        <h1 id="gdx-title">Graphic Design</h1>
+        <p class="section-intro">Brand identity, posters, UI visuals, and campaign design.</p>
+
+        <div class="grid grid-portfolio">
+          <!-- Example cards (replace with your projects) -->
+          <article class="card project">
+            <a class="project-link" href="projects/graphic-design/gd-01.html">
+              <figure class="project-thumb">
+                <img src="images/graphic-design/gd-01-thumb.jpg" alt="Branding project thumbnail." loading="lazy" />
+              </figure>
+              <div class="project-meta">
+                <h3 class="project-title">Indie Game Branding</h3>
+                <p class="project-tags">Identity · Logo · Guidelines</p>
+                <p class="project-blurb">Visual identity and logo system for an indie title.</p>
+                <span class="project-cta">View project →</span>
+              </div>
+            </a>
+          </article>
+
+          <article class="card project">
+            <a class="project-link" href="projects/graphic-design/gd-02.html">
+              <figure class="project-thumb">
+                <img src="images/graphic-design/gd-02-thumb.jpg" alt="Poster series thumbnail." loading="lazy" />
+              </figure>
+              <div class="project-meta">
+                <h3 class="project-title">Poster Series</h3>
+                <p class="project-tags">Print · Typography</p>
+                <p class="project-blurb">A set of high-contrast posters with retro-noir accents.</p>
+                <span class="project-cta">View project →</span>
+              </div>
+            </a>
+          </article>
+
+          <article class="card project">
+            <a class="project-link" href="projects/graphic-design/gd-03.html">
+              <figure class="project-thumb">
+                <img src="images/graphic-design/gd-03-thumb.jpg" alt="UI visual direction thumbnail." loading="lazy" />
+              </figure>
+              <div class="project-meta">
+                <h3 class="project-title">UI Visual Direction</h3>
+                <p class="project-tags">UI · Visual Design</p>
+                <p class="project-blurb">Establishing color, type, and components for a game UI.</p>
+                <span class="project-cta">View project →</span>
+              </div>
+            </a>
+          </article>
+
+          <article class="card project">
+            <a class="project-link" href="projects/graphic-design/gd-04.html">
+              <figure class="project-thumb">
+                <img src="images/graphic-design/gd-04-thumb.jpg" alt="Key art / title screen thumbnail." loading="lazy" />
+              </figure>
+              <div class="project-meta">
+                <h3 class="project-title">Key Art / Title Screen</h3>
+                <p class="project-tags">Campaign · Key Art</p>
+                <p class="project-blurb">Title screen and key visuals for launch beats.</p>
+                <span class="project-cta">View project →</span>
+              </div>
+            </a>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <small>&copy; <span id="year"></span> Riku Darroch</small>
+      <nav aria-label="Footer">
+        <ul class="footer-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="artworks.html">Artworks</a></li>
+          <li><a href="game-design.html">Game Design</a></li>
+          <li><a href="graphic-design.html" aria-current="page">Graphic Design</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const toggle = document.querySelector('.nav-toggle');
+    const menu = document.getElementById('primary-menu');
+    if (toggle && menu) {
+      toggle.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!expanded));
+        menu.classList.toggle('open', !expanded);
+      });
+    }
+  </script>
+</body>
+</html>

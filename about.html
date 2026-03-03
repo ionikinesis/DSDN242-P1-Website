@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About — Riku Darroch</title>
+  <meta name="description" content="About Riku Darroch — product & visual designer focused on clarity, craft, and outcomes." />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; } }
+  </style>
+</head>
+<body>
+
+<div class="bg-image" aria-hidden="true"></div>
+<div class="bg-blur" aria-hidden="true"></div>
+
+  <a class="skip-link" href="#main-content">Skip to content</a>
+<!-- Background image layer (behind everything) -->
+<div class="bg-image" aria-hidden="true"></div>
+
+<!-- Global blur veil (above image, below content) -->
+<div class="bg-blur" aria-hidden="true"></div>
+  <header class="site-header" role="banner">
+    <div class="container">
+      <a class="brand" href="index.html" aria-label="Home">
+        <span class="brand-mark" aria-hidden="true">RD</span>
+        <span class="brand-name">Riku Darroch</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Primary">
+        <button class="nav-toggle" aria-expanded="false" aria-controls="primary-menu">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="hamburger" aria-hidden="true"></span>
+        </button>
+        <ul id="primary-menu">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="artworks.html">Artworks</a></li>
+          <li><a href="game-design.html">Game Design</a></li>
+          <li><a href="graphic-design.html">Graphic Design</a></li>
+          <li><a href="about.html" aria-current="page">About</a></li>  <!-- About visible & active -->
+          <li><a href="contact.html">Contact</a></li>                 <!-- Normal link, not CTA -->
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="about" aria-labelledby="about-title">
+      <div class="container">
+        <div class="about-grid">
+          <figure class="about-photo">
+            <img src="images/profile.jpg" alt="Portrait of Riku Darroch." loading="lazy" />
+          </figure>
+
+          <div class="about-content">
+            <h1 id="about-title">About</h1>
+            <p>
+              I’m Riku, a designer focused on clarity, craft, and outcomes. I’ve shipped work across
+              fintech, creator tools, and SaaS—balancing user needs with business impact.
+            </p>
+            <ul class="about-list">
+              <li><strong>Strengths:</strong> Systems thinking, interaction design, visual polish</li>
+              <li><strong>Tooling:</strong> Figma, ProtoPie, Adobe CC, Notion</li>
+              <li><strong>Values:</strong> Accessibility, inclusion, and honest collaboration</li>
+            </ul>
+            <div class="about-cta">
+              <a class="button" href="contact.html">Let’s collaborate</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Optional: add a small gallery or timeline here -->
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <small>&copy; <span id="year"></span> Riku Darroch</small>
+      <nav aria-label="Footer">
+        <ul class="footer-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="artworks.html">Artworks</a></li>
+          <li><a href="game-design.html">Game Design</a></li>
+          <li><a href="graphic-design.html">Graphic Design</a></li>
+          <li><a href="about.html" aria-current="page">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const toggle = document.querySelector('.nav-toggle');
+    const menu = document.getElementById('primary-menu');
+    if (toggle && menu) {
+      toggle.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!expanded));
+        menu.classList.toggle('open', !expanded);
+      });
+    }
+  </script>
+</body>
+</html>
