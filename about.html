@@ -8,25 +8,23 @@
   <link rel="stylesheet" href="styles.css" />
   <style>
     :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
-    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; } }
+    @media (prefers-reduced-motion: reduce) {
+      *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; }
+    }
   </style>
 </head>
 <body>
 
-<div class="bg-image" aria-hidden="true"></div>
-<div class="bg-blur" aria-hidden="true"></div>
+  <!-- Single background pair -->
+  <div class="bg-image" aria-hidden="true"></div>
+  <div class="bg-blur"  aria-hidden="true"></div>
 
   <a class="skip-link" href="#main-content">Skip to content</a>
-<!-- Background image layer (behind everything) -->
-<div class="bg-image" aria-hidden="true"></div>
 
-<!-- Global blur veil (above image, below content) -->
-<div class="bg-blur" aria-hidden="true"></div>
   <header class="site-header" role="banner">
     <div class="container">
       <a class="brand" href="index.html" aria-label="Home">
-        <span class="brand-mark" aria-hidden="true">RD</span>
-        <span class="brand-name">Riku Darroch</span>
+        <img class="brand-logo" src="LOGO.png" alt="Riku Darroch logo" height="72" />
       </a>
 
       <nav class="site-nav" aria-label="Primary">
@@ -39,8 +37,8 @@
           <li><a href="artworks.html">Artworks</a></li>
           <li><a href="game-design.html">Game Design</a></li>
           <li><a href="graphic-design.html">Graphic Design</a></li>
-          <li><a href="about.html" aria-current="page">About</a></li>  <!-- About visible & active -->
-          <li><a href="contact.html">Contact</a></li>                 <!-- Normal link, not CTA -->
+          <li><a href="about.html" aria-current="page">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
         </ul>
       </nav>
     </div>
@@ -51,27 +49,62 @@
       <div class="container">
         <div class="about-grid">
           <figure class="about-photo">
-            <img src="images/profile.jpg" alt="Portrait of Riku Darroch." loading="lazy" />
+            <img src="PORTRAIT.jpg" alt="Portrait of Riku Darroch." loading="lazy" />
           </figure>
 
           <div class="about-content">
-            <h1 id="about-title">About</h1>
+            <h1 id="about-title">Who Is Riku Yuki Darroch?</h1>
+
             <p>
-              I’m Riku, a designer focused on clarity, craft, and outcomes. I’ve shipped work across
-              fintech, creator tools, and SaaS—balancing user needs with business impact.
+              My name is Riku Yuki Darroch. I studied at Victoria University of Wellington
+              and my degree is in Design Innovation majoring in Communication Design and Game Design.
+              <br>
+              I grew up in Te Anau, a small town in Southland New Zealand, and with my
+              Japanese Mother I have been back and forth between there and visiting
+              family in Ebetsu, Hokkaido, Japan. Although I struggled with my identity as a child, I now embrace it as a unique perspective on the world and use it as inspiration in my creative work.
+              <br>
+              I consider my curiosity to be one of my biggest strengths. I particularly
+              love finding inspirations from unlikely places; of course from projects by
+              people in my field, but also from music, politics, history and sciences. I
+              particularly resonate with themes of class inequality, environmentalism,
+              cultural cross-pollination, and social commentary.
+              <br>
+              My creative practice is primarily in art, concept design and game design, however I also have experience with graphic design, video production, photography, writing, animation, and audio production.
             </p>
+
+            <p>
+              The reason why I made this career decision is because I believe in the
+              power of expressing ideas through creative fields and its ability to inhibit
+              change. Art as a career is often seen as a non essential job, finding itself
+              first at the chopping block whenever convenient by those in power. But the
+              ability to express ideas through art is something that not many other forms
+              of communication can replicate quite as effectively. I am sure you have
+              watched a movie that taught you about yourself or changed the way that
+              you view the world. Perhaps not quantifiably, but the way that creative
+              projects teach about abstract concepts is so valuable and I want to harness
+              that. There is a magic you feel when you listen to a beautiful song or
+              see a beautiful painting that no amount of scientific analysis is capable
+              of describing. It’s that mysterious power that art holds that is meaningful.
+              No matter when or where, innately humanity fights to create, whether
+              under an oppressive regime or on the cave man walls. Maybe to call out
+              to the cosmos to prove that we were real once, or to be remembered in
+              the future, perhaps there is something divine about creating that keeps us
+              picking up our tools.
+              <br><br>
+              “A Earth without art is just a rock” — Kendrick Lamar
+            </p>
+
             <ul class="about-list">
-              <li><strong>Strengths:</strong> Systems thinking, interaction design, visual polish</li>
-              <li><strong>Tooling:</strong> Figma, ProtoPie, Adobe CC, Notion</li>
-              <li><strong>Values:</strong> Accessibility, inclusion, and honest collaboration</li>
+              <li><strong>Strengths:</strong> Visual Design, Collaborative Working, Creative Ideation</li>
+              <li><strong>Softwares:</strong> Clip Studio Paint, Photoshop, Affinity, InDesign, DaVinci Resolve, Premiere Pro, FL Studio, Blender, Unreal Engine 5</li>
+              <li><strong>Values:</strong> Environment, Identity, Work Ethic, Narrative</li>
             </ul>
+
             <div class="about-cta">
               <a class="button" href="contact.html">Let’s collaborate</a>
             </div>
           </div>
         </div>
-
-        <!-- Optional: add a small gallery or timeline here -->
       </div>
     </section>
   </main>

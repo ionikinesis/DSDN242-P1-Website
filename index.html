@@ -11,56 +11,53 @@
     @media (prefers-reduced-motion: reduce) {
       *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; scroll-behavior:auto!important; }
     }
+    /* Inline helper – you can move this into styles.css */
+
   </style>
 </head>
 <body>
 
-<div class="bg-image" aria-hidden="true"></div>
-<div class="bg-blur" aria-hidden="true"></div>
+  <!-- Single background pair -->
+  <div class="bg-image" aria-hidden="true"></div>
+  <div class="bg-blur"  aria-hidden="true"></div>
 
   <a class="skip-link" href="#main-content">Skip to content</a>
-<!-- Background image layer (behind everything) -->
-<div class="bg-image" aria-hidden="true"></div>
 
-<!-- Global blur veil (above image, below content) -->
-<div class="bg-blur" aria-hidden="true"></div>
-  <header class="site-header" role="banner">
-    <div class="container">
-      <a class="brand" href="index.html" aria-label="Home">
-        <span class="brand-mark" aria-hidden="true">RD</span>
-        <span class="brand-name">Riku Darroch</span>
-      </a>
+ <header class="site-header" role="banner">
+  <div class="container">
+    <a class="brand" href="index.html" aria-label="Home">
+      <img class="brand-logo" src="LOGO.png" alt="Riku Yuki Darroch logo" />
+    </a>
 
-      <nav class="site-nav" aria-label="Primary">
-        <button class="nav-toggle" aria-expanded="false" aria-controls="primary-menu">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="hamburger" aria-hidden="true"></span>
-        </button>
-        <ul id="primary-menu">
-          <li><a href="index.html" aria-current="page">Home</a></li>
-          <li><a href="artworks.html">Artworks</a></li>
-          <li><a href="game-design.html">Game Design</a></li>
-          <li><a href="graphic-design.html">Graphic Design</a></li>
-          <li><a href="about.html">About</a></li>    <!-- About is back and visible -->
-          <li><a class="nav-link--cta" href="contact.html">Contact</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
-
+    <nav class="site-nav" aria-label="Primary">
+      <button class="nav-toggle" aria-expanded="false" aria-controls="primary-menu">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="hamburger" aria-hidden="true"></span>
+      </button>
+      <ul id="primary-menu">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="artworks.html">Artworks</a></li>
+        <li><a href="game-design.html">Game Design</a></li>
+        <li><a href="graphic-design.html">Graphic Design</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
   <main id="main-content">
     <!-- Hero / Intro -->
     <section class="hero" aria-labelledby="hero-title">
       <div class="container">
         <div class="grid hero-grid">
           <div class="hero-content">
-            <h1 id="hero-title">Riku Yuki Darroch - Game Designer, Artist, Creative Jack-of-all-Trades </h1>
+            <h1 id="hero-title">Riku Yuki Darroch — Game Designer, Artist, Creative Jack‑of‑all‑Trades</h1>
             <p class="lead">
-              I'm a visual designer exploring the expression of art and narrative through visual and interactive mediums. 
+              I'm a visual designer exploring the expression of art and narrative through visual and interactive mediums.
             </p>
             <div class="hero-cta">
-            
-            <a class="nav-link--cta" href="contact.html">Get in touch</a>
+              <a class="nav-link--cta" href="contact.html">Get in touch</a>
+            </div>
           </div>
           <figure class="hero-figure">
             <img src="images/hero-cover.jpg" alt="Collage of selected interface and brand explorations." loading="eager" />
@@ -76,28 +73,29 @@
         <p class="section-intro">A few highlights across disciplines. Explore full categories from the top navigation.</p>
 
         <div class="grid grid-portfolio">
-          <!-- Example cards (replace with your projects) -->
+          <!-- Card 1 -->
           <article class="card project">
             <a class="project-link" href="case-studies/project-01.html">
               <figure class="project-thumb">
-                <img src="images/project-01-thumb.jpg" alt="Red Moon Concept Art Preview." loading="lazy" />
+                <img src="almost done.png" alt="Red Moon Concept Art Preview." loading="lazy" />
               </figure>
               <div class="project-meta">
-                <h3 class="project-title">"Red Moon" World Concept Deck</h3>
+                <h3 class="project-title">“Red Moon” World Concept Deck</h3>
                 <p class="project-tags">World Building · Concept Art · Character Design</p>
-                <p class="project-blurb">Concept Deck for multi media paranormal eco-narrative world building project.</p>
+                <p class="project-blurb">Concept deck for a multi‑media paranormal eco‑narrative worldbuilding project.</p>
                 <span class="project-cta">View More →</span>
               </div>
             </a>
           </article>
 
+          <!-- Card 2 -->
           <article class="card project">
             <a class="project-link" href="case-studies/project-02.html">
               <figure class="project-thumb">
                 <img src="images/project-02-thumb.jpg" alt="Reflection Concept Art Preview." loading="lazy" />
               </figure>
               <div class="project-meta">
-                <h3 class="project-title">"Reflection" Horror Game Prototype</h3>
+                <h3 class="project-title">“Reflection” Horror Game Prototype</h3>
                 <p class="project-tags">Game Design Document · Pitch · Game Prototype</p>
                 <p class="project-blurb">Unreal Engine 5 retro 3D horror game for PC with GDD and concept art.</p>
                 <span class="project-cta">View More →</span>
@@ -105,37 +103,35 @@
             </a>
           </article>
 
+          <!-- Card 3 -->
           <article class="card project">
             <a class="project-link" href="case-studies/project-03.html">
               <figure class="project-thumb">
-                <img src="images/project-03-thumb.jpg" alt="Album art Preview." loading="lazy" />
+                <img src="album cover art.png" alt="Album art Preview." loading="lazy" />
               </figure>
               <div class="project-meta">
-                <h3 class="project-title">"Disociating at the Function" Album Graphic Design</h3>
+                <h3 class="project-title">“Disociating at the Function” Album Graphic Design</h3>
                 <p class="project-tags">Graphic Design · Photography · Typography</p>
-                <p class="project-blurb">Mock album art and jewel case for fictional rap album. </p>
+                <p class="project-blurb">Mock album art and jewel case for a fictional rap album.</p>
                 <span class="project-cta">View more →</span>
               </div>
             </a>
           </article>
 
+          <!-- Card 4 -->
           <article class="card project">
             <a class="project-link" href="case-studies/project-04.html">
               <figure class="project-thumb">
-                <img src="images/project-04-thumb.jpg" alt="Photography Preview." loading="lazy" />
+                <img src="3E7825E3-E6DF-45F9-88AA-05536A53BCD9-7484-000002D0C700F917.jpg" alt="Photography Preview." loading="lazy" />
               </figure>
               <div class="project-meta">
-                <h3 class="project-title">"Home" Photography Collection</h3>
+                <h3 class="project-title">“Home” Photography Collection</h3>
                 <p class="project-tags">Photography · Identity · Travel</p>
                 <p class="project-blurb">A growing collection of photography of the different parts of the world I have called home.</p>
                 <span class="project-cta">View more →</span>
               </div>
             </a>
           </article>
-        </div>
-
-        <div class="work-cta">
-          
         </div>
       </div>
     </section>
@@ -158,8 +154,10 @@
   </footer>
 
   <script>
+    // Year
     document.getElementById('year').textContent = new Date().getFullYear();
 
+    // Mobile nav toggle
     const toggle = document.querySelector('.nav-toggle');
     const menu = document.getElementById('primary-menu');
     if (toggle && menu) {

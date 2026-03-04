@@ -59,7 +59,7 @@ h1,h2,h3{ line-height:1.2; margin:0 0 var(--space-4); color:var(--text-100); }
 .bg-blur{
   position:fixed; inset:0; z-index:1;
   background-color: rgba(5, 10, 20, .30);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(7px);
   -webkit-backdrop-filter: blur(14px);
 }
 
@@ -96,6 +96,32 @@ h1,h2,h3{ line-height:1.2; margin:0 0 var(--space-4); color:var(--text-100); }
 /* =============================
    5) Header / Nav — glass, no glow
    ============================= */
+/* Brand image logo — cleaner, bigger, no border */
+.brand-logo{
+  display:block;
+  height:72px;           /* INCREASED size (was 56px) */
+  width:auto;
+  border-radius:0;       /* remove rounding */
+  border:none;           /* remove border */
+  box-shadow:none;       /* remove shadow */
+  background:transparent;
+  object-fit:contain;
+}
+
+/* Even larger on desktops */
+@media (min-width: 900px){
+  .brand-logo{
+    height:84px;        /* looks great on wide navbars */
+  }
+}
+
+/* Smaller on narrow phones */
+@media (max-width: 480px){
+  .brand-logo{
+    height:60px;
+  }
+}
+
 .site-header{
   position:sticky; top:0; z-index:5;
   background-color: rgba(16, 26, 51, .30);
@@ -105,8 +131,6 @@ h1,h2,h3{ line-height:1.2; margin:0 0 var(--space-4); color:var(--text-100); }
 }
 .site-header .container{ display:flex; align-items:center; justify-content:space-between; padding:1.0rem var(--space-5); }
 .brand{ display:flex; align-items:center; gap:.9rem; text-decoration:none; }
-.brand-mark{ display:inline-grid; place-content:center; width:56px; height:56px; border-radius:14px; background:var(--moon); color:#0a101a; font-weight:900; font-size:1.05rem; border:1px solid rgba(255,255,255,.22); box-shadow: 0 8px 20px rgba(0,0,0,.25); }
-.brand-name{ color:var(--text-100); font-size:1.22rem; font-weight:800; letter-spacing:.25px; }
 
 .site-nav ul{ list-style:none; display:flex; align-items:center; gap:1.1rem; margin:0; padding:0; }
 .site-nav a{ display:inline-block; padding:.55rem .9rem; line-height:1; border-radius:10px; color:var(--text-300); border:1px solid transparent; }
@@ -158,6 +182,53 @@ section{ padding: var(--space-8) 0; border-top: 1px solid rgba(255,255,255,.08);
 input,textarea{ width:100%; padding:.95rem 1rem; border-radius:12px; border:1px solid rgba(255,255,255,.16); background-color: rgba(16,26,51,.32); color:var(--text-100); backdrop-filter: blur(12px) saturate(135%); -webkit-backdrop-filter: blur(12px) saturate(135%); }
 input::placeholder,textarea::placeholder{ color:#8ea0bd; }
 input:focus-visible,textarea:focus-visible{ border-color: var(--cyan); outline-color: var(--cyan); }
+/* ===== About page layout (image left, text right) ===== */
+/* ===== About page layout (image left, text right) ===== */
+.about-grid{
+  display: grid;
+  /* ⬆️ Increase the image column width to ~halfway back to original */
+  grid-template-columns: min(420px, 45vw) 1fr; /* image ~420px max, up to 45% of viewport */
+  gap: var(--space-7);
+  align-items: start;
+}
+
+/* Portrait column — allow larger max width */
+.about-photo{
+  max-width: 420px;      /* was 280px; bigger but still controlled */
+}
+.about-photo img{
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+  object-fit: cover;
+}
+
+/* Text column */
+.about-content{
+  display: grid;
+  gap: var(--space-5);
+}
+
+/* Tighter list spacing */
+.about-list{
+  margin: var(--space-3) 0;
+  padding-left: 1.25em;
+  color: var(--text-200);
+}
+.about-list li{ margin-bottom: .4rem; }
+
+/* Responsive: stack on small screens */
+@media (max-width: 900px){
+  .about-grid{
+    grid-template-columns: 1fr;
+  }
+  /* On small screens, keep the image a bit larger but still balanced */
+  .about-photo{
+    max-width: 520px;    /* allow a touch more width when stacked */
+    margin-inline: auto; /* center the image above the text */
+  }
+}
 
 /* =============================
    9) Footer — glass strip

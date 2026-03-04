@@ -1,1 +1,13 @@
 # DSDN242-P1-Website
+24/2/2026
+I created a brainstorm for what my website was to look like, what about me I wanted to incorporate, what type of website I wanted to make. I landed on the themes of creativity, retro asthetic, scenery, nerd-core and tech. 
+I then created a sketch mockup website where the different pages on it would be swapped between choosing a disk to insert into a console to change what is displayed on a screen.
+
+26/2/2026
+I created the simple bones of what would become this website during class. In the middle of the screen there was a window that changed when selecting the different options on the menu list. 
+
+2/4/2026
+I decided that the scope of that idea was too extreme as the purpose of this website is to represent me as a designer in a professional context and having a website too experimental and artsy will scare away employers. So I reverted the files back to the original template from Nuku and generated simple portfolio website. I then iterated slowly by refining and changing different elements to suit my needs, I changed the colors to match my favorite photo I have taken and put it behind the website with a gaussian blur overtop of it. 
+
+3/4/2026
+Looking at the website I thought that it looked a little too corporate, so I wanted to make the website more personalized to me, I started by adding all of the information that the LLM left placeholders for written by me, and filling in the photos as well. I also created a new logo made out of my own signature that I replaced the placeholder for at the top of the page. I am slowly getting more happy with the state of the website although there is quite more work ahead of me to do.
