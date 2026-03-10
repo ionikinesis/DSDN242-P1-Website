@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project Title — Riku Darroch</title>
+  <meta name="description" content="Individual project case study by Riku Darroch." />
+
+  <!-- Your site stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Optional: Google Font for headings/nav (example: Poppins). Remove if not using. -->
+  <!-- <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link  href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"> -->
+
+  <style>
+    /* ====== Project page additions (small, safe) ====== */
+
+    /* Layout wrappers */
+    .project{
+      padding: var(--space-8) 0;
+    }
+    .project-grid{
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;   /* gallery left, text right */
+      gap: var(--space-7);
+      align-items: start;
+    }
+    @media (max-width: 1000px){
+      .project-grid{ grid-template-columns: 1fr; }
+    }
+
+    /* Glass window */
+    .project-window{
+      position: relative;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255,255,255,.18);
+      background-color: rgba(16,26,51,.34);
+      backdrop-filter: blur(14px) saturate(140%) contrast(108%);
+      -webkit-backdrop-filter: blur(14px) saturate(140%) contrast(108%);
+      box-shadow: var(--shadow-0);
+      overflow: hidden;
+    }
+
+    /* Gallery */
+    .gallery{
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 16 / 10;        /* consistent viewport; adjust if needed */
+      background: rgba(0,0,0,.2);
+    }
+    .gallery-track{
+      display: flex;
+      height: 100%;
+      width: 100%;
+      transform: translateX(var(--x, 0%));
+      transition: transform 260ms ease;
+      touch-action: pan-y;
+    }
+    .gallery-slide{
+      flex: 0 0 100%;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+    .gallery-slide img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Gallery controls */
+    .gallery-controls{
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      pointer-events: none;
+    }
+    .gallery-button{
+      pointer-events: auto;
+      display: inline-grid; place-items: center;
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.18);
+      background-color: rgba(16,26,51,.45);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      color: var(--text-100);
+      margin: 0 var(--space-3);
+      cursor: pointer;
+    }
+    .gallery-button:disabled{ opacity: .45; cursor: not-allowed; }
+    .gallery-dots{
+      position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: .45rem;
+      pointer-events: none;
+    }
+    .gallery-dot{
+      pointer-events: auto;
+      width: 10px; height: 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.5);
+      background: rgba(255,255,255,.15);
+      cursor: pointer;
+    }
+    .gallery-dot[aria-current="true"]{
+      background: var(--moon);
+      border-color: var(--moon);
+    }
+
+    /* Info column */
+    .project-info{
+      display: grid;
+      gap: var(--space-5);
+    }
+    .project-title{
+      margin: 0; line-height: 1.2;
+    }
+    .project-body p{ margin: 0 0 var(--space-4); color: var(--text-200); }
+    .project-meta{
+      color: var(--text-300);
+      font-size: .95rem;
+    }
+
+    /* “See more” area */
+    .project-cta{
+      display: flex; gap: var(--space-4); align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background layers (single pair) -->
+  <div class="bg-image" aria-hidden="true"></div>
+  <div class="bg-blur"  aria-hidden="true"></div>
+
+  <a class="skip-link" href="#main-content">Skip to content</a>
+
+  <!-- Header -->
+  <header class="site-header" role="banner">
+    <div class="container">
+      <a class="brand" href="index.html" aria-label="Home">
+        <img class="brand-logo" src="LOGO.png" alt="Riku Darroch logo" />
+      </a>
+
+      <nav class="site-nav" aria-label="Primary">
+        <button class="nav-toggle" aria-expanded="false" aria-controls="primary-menu">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="hamburger" aria-hidden="true"></span>
+        </button>
+        <ul id="primary-menu">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="artworks.html">Artworks</a></li>
+          <li><a href="game-design.html">Game Design</a></li>
+          <li><a href="graphic-design.html">Graphic Design</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a class="nav-link--cta" href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main id="main-content">
+    <section class="project" aria-labelledby="project-title">
+      <div class="container">
+        <div class="project-grid">
+
+          <!-- Left: Glass window (gallery) -->
+          <div class="project-window">
+            <div class="gallery" aria-label="Project gallery" data-gallery>
+              <div class="gallery-track" data-gallery-track style="--x:0%;">
+                <!-- Slide 1 -->
+                <div class="gallery-slide">
+                  <img src="images/projects/sample-01.jpg" alt="Sample project view 1">
+                </div>
+                <!-- Slide 2 -->
+                <div class="gallery-slide">
+                  <img src="images/projects/sample-02.jpg" alt="Sample project view 2">
+                </div>
+                <!-- Slide 3 -->
+                <div class="gallery-slide">
+                  <img src="images/projects/sample-03.jpg" alt="Sample project view 3">
+                </div>
+              </div>
+
+              <!-- Controls -->
+              <div class="gallery-controls" aria-hidden="false">
+                <button class="gallery-button" type="button" data-prev aria-label="Previous image">❮</button>
+                <button class="gallery-button" type="button" data-next aria-label="Next image">❯</button>
+                <div class="gallery-dots" role="tablist" aria-label="Choose slide">
+                  <button class="gallery-dot" type="button" data-dot="0" aria-label="Slide 1" aria-current="true"></button>
+                  <button class="gallery-dot" type="button" data-dot="1" aria-label="Slide 2"></button>
+                  <button class="gallery-dot" type="button" data-dot="2" aria-label="Slide 3"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Info -->
+          <div class="project-info">
+            <header>
+              <h1 id="project-title" class="project-title">Project Title Goes Here</h1>
+              <p class="project-meta">Discipline · Tools · Year</p>
+            </header>
+
+            <div class="project-body">
+              <p>
+                Short intro paragraph describing the problem, context, and your role.
+                Explain goals, audience, and what success looked like.
+              </p>
+              <p>
+                Add a longer paragraph with the story—your process highlights:
+                research, ideation, prototyping, iterations, constraints, and the
+                final result. This should be scannable and focused on outcomes.
+              </p>
+              <p>
+                If you want, call out accessibility considerations, performance,
+                or craft details that matter to you (and to reviewers).
+              </p>
+            </div>
+
+            <div class="project-cta">
+              <a class="button primary" href="https://example.com/full-case-study" target="_blank" rel="noopener">See full case study</a>
+              <a class="button ghost" href="index.html#work">Back to selected work</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <small>&copy; <span id="year"></span> Riku Darroch</small>
+      <nav aria-label="Footer">
+        <ul class="footer-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="artworks.html">Artworks</a></li>
+          <li><a href="game-design.html">Game Design</a></li>
+          <li><a href="graphic-design.html">Graphic Design</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a class="nav-link--cta" href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </footer>
+
+  <!-- Page scripts -->
+  <script>
+    // Year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Mobile nav toggle
+    (function(){
+      const toggle = document.querySelector('.nav-toggle');
+      const menu   = document.getElementById('primary-menu');
+      if (!toggle || !menu) return;
+      toggle.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!expanded));
+        menu.classList.toggle('open', !expanded);
+      });
+    })();
+
+    // ===== Gallery logic (keyboard + click + drag/swipe) =====
+    (function(){
+      const root  = document.querySelector('[data-gallery]');
+      if (!root) return;
+      const track = root.querySelector('[data-gallery-track]');
+      const slides= Array.from(root.querySelectorAll('.gallery-slide'));
+      const prev  = root.querySelector('[data-prev]');
+      const next  = root.querySelector('[data-next]');
+      const dots  = Array.from(root.querySelectorAll('.gallery-dot'));
+
+      let i = 0; // current index
+      const clamp = (v,min,max)=> Math.max(min, Math.min(max, v));
+      const go = (idx) => {
+        i = clamp(idx, 0, slides.length-1);
+        track.style.setProperty('--x', `${-100*i}%`);
+        // update buttons
+        if (prev) prev.disabled = (i === 0);
+        if (next) next.disabled = (i === slides.length-1);
+        // update dots
+        dots.forEach((d, di) => d.setAttribute('aria-current', di === i ? 'true' : 'false'));
+      };
+
+      // Buttons
+      if (prev) prev.addEventListener('click', ()=> go(i-1));
+      if (next) next.addEventListener('click', ()=> go(i+1));
+      // Dots
+      dots.forEach(d => d.addEventListener('click', () => go(parseInt(d.dataset.dot,10) || 0)));
+      // Keyboard
+      root.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft')  { e.preventDefault(); go(i-1); }
+        if (e.key === 'ArrowRight') { e.preventDefault(); go(i+1); }
+      });
+      root.setAttribute('tabindex', '0'); // enable keyboard focus
+
+      // Drag/Swipe
+      let startX = 0, curX = 0, dragging = false;
+      const onDown = (x)=>{ dragging = true; startX = curX = x; root.classList.add('dragging'); };
+      const onMove = (x)=>{ if (!dragging) return; curX = x; const dx = curX - startX;
+        const pct = (dx / root.clientWidth) * 100; track.style.transition = 'none';
+        track.style.setProperty('--x', `${-100*i + pct}%`);
+      };
+      const onUp = ()=>{ if (!dragging) return; dragging = false; root.classList.remove('dragging'); track.style.transition = '';
+        const dx = curX - startX; const thresh = root.clientWidth * 0.15;
+        if (dx >  thresh) go(i-1); else if (dx < -thresh) go(i+1); else go(i);
+      };
+
+      root.addEventListener('mousedown', (e)=> onDown(e.clientX));
+      root.addEventListener('mousemove', (e)=> onMove(e.clientX));
+      window.addEventListener('mouseup', onUp);
+
+      root.addEventListener('touchstart', (e)=> onDown(e.touches[0].clientX), {passive:true});
+      root.addEventListener('touchmove',  (e)=> onMove(e.touches[0].clientX), {passive:true});
+      root.addEventListener('touchend', onUp);
+
+      // Init
+      go(0);
+    })();
+  </script>
+</body>
+</html>

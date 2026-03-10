@@ -4,24 +4,93 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Contact — Riku Darroch</title>
-  <meta name="description" content="Contact Riku Darroch for projects, collaborations, or portfolio reviews." />
+  <meta name="description" content="Connect with Riku Darroch for professional enquiries, collaborations, or portfolio reviews." />
   <link rel="stylesheet" href="styles.css" />
+
   <style>
     :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
-    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; } }
-</style>
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+    /* ========= Formal contact layout ========= */
+    .contact-header { max-width: 760px; }
+
+    .contact-actions {
+      display: grid;
+      gap: var(--space-4);
+      margin-top: var(--space-6);
+      max-width: 520px;
+    }
+
+    /* ========= BUTTON STYLES ========= */
+    .btn-solid {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      color: #061018;
+      background: var(--moon);
+      border: 1px solid var(--moon);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.35);
+      transition: transform .15s ease, box-shadow .25s ease, background-color .2s ease;
+    }
+    .btn-solid:hover,
+    .btn-solid:focus-visible {
+      transform: translateY(-2px);
+      background: #ffe29a;
+      border-color: #ffe29a;
+      box-shadow: 0 18px 48px rgba(0,0,0,0.55);
+    }
+
+    /* Secondary variant */
+    .btn-secondary {
+      background: rgba(16,26,51,.55);
+      border-color: rgba(255,255,255,.22);
+      color: var(--text-100);
+    }
+    .btn-secondary:hover,
+    .btn-secondary:focus-visible {
+      background: rgba(16,26,51,.70);
+      border-color: rgba(255,255,255,.30);
+      color: var(--text-100);
+    }
+
+    /* Icons: inherit text color */
+    .btn-solid svg {
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+      stroke: currentColor;
+      fill: currentColor;
+    }
+
+    .contact-note {
+      margin-top: var(--space-4);
+      color: var(--text-300);
+      font-size: 0.95rem;
+      max-width: 520px;
+    }
+  </style>
 </head>
+
 <body>
 
+  <!-- Background -->
   <div class="bg-image" aria-hidden="true"></div>
-  <div class="bg-blur"  aria-hidden="true"></div>
+  <div class="bg-blur" aria-hidden="true"></div>
 
   <a class="skip-link" href="#main-content">Skip to content</a>
 
+  <!-- Header -->
   <header class="site-header" role="banner">
     <div class="container">
       <a class="brand" href="index.html" aria-label="Home">
-        <img class="brand-logo" src="LOGO.png" alt="Riku Darroch logo" height="56" />
+        <img class="brand-logo" src="LOGO.png" alt="Riku Darroch logo" height="72" />
       </a>
 
       <nav class="site-nav" aria-label="Primary">
@@ -35,48 +104,106 @@
           <li><a href="game-design.html">Game Design</a></li>
           <li><a href="graphic-design.html">Graphic Design</a></li>
           <li><a href="about.html">About</a></li>
-          <li><a class="nav-link--cta" href="contact.html" aria-current="page">Contact</a></li>
+          <li><a aria-current="page" href="contact.html">Contact</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
+  <!-- Main -->
   <main id="main-content">
     <section class="contact" aria-labelledby="contact-title">
       <div class="container">
-        <h1 id="contact-title">Contact</h1>
-        <p class="section-intro">For projects, collaborations, or portfolio reviews—say hello.</p>
+        <div class="contact-header">
+          <h1 id="contact-title">Contact</h1>
+          <p class="section-intro">
+            For professional enquiries, commissions, and collaborations, please reach out via the channels below.
+          </p>
+        </div>
 
-        <!-- Replace action with your form handler -->
-        <form class="contact-form" action="https://example.com/form" method="post">
-          <div class="form-row">
-            <label for="name">Name</label>
-            <input id="name" name="name" autocomplete="name" required />
-          </div>
+        <!-- ===== CONTACT BUTTONS WITH ICONS ===== -->
+        <div class="contact-actions" aria-label="Contact methods">
 
-          <div class="form-row">
-            <label for="email">Email</label>
-            <input id="email" type="email" name="email" autocomplete="email" required />
-          </div>
+          <!-- Email -->
+          <a class="btn-solid" href="mailto:rikuyuki50@gmail.com" rel="noopener">
+            <!-- Envelope Icon -->
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 4h16v16H4z" fill="none"/>
+              <path d="M4 4l8 6 8-6" stroke-width="2" fill="none"/>
+              <rect x="4" y="4" width="16" height="16" rx="2" stroke-width="2" fill="none"/>
+            </svg>
+            <span>Email</span>
+          </a>
 
-          <div class="form-row">
-            <label for="message">Message</label>
-            <textarea id="message" name="message" rows="6" required></textarea>
-          </div>
+          <!-- LinkedIn -->
+          <a class="btn-solid btn-secondary" href="https://www.linkedin.com/in/ionikinesis" target="_blank" rel="me external noopener noreferrer" aria-label="View LinkedIn profile">
+            <!-- LinkedIn Icon -->
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 4h16v16H4z" fill="none"/>
+              <path d="M6.5 9h2.5v9H6.5zM7.75 6A1.25 1.25 0 1 1 7.75 3.5 1.25 1.25 0 0 1 7.75 6zM11 9h2.3v1.3h.1c.3-.6 1-1.3 2.3-1.3 2.5 0 3 1.6 3 3.7V18H16v-4.1c0-1-.1-2.2-1.4-2.2-1.4 0-1.6 1.1-1.6 2.1V18h-2.5z"/>
+            </svg>
+            <span>LinkedIn</span>
+          </a>
+          <!-- ArtStation -->
+          <a class="btn-solid btn-secondary" href="https://www.artstation.com/reekouu" target="_blank" rel="me external noopener noreferrer" aria-label="View ArtStation portfolio">
+            <!-- ArtStation Icon (stylized triangular mark) -->
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <!-- Triangle-like shape reminiscent of ArtStation mark -->
+              <path d="M3.2 16.5l5.1-8.8c.3-.5.8-.8 1.3-.8h4a1.6 1.6 0 0 1 1.4.8l5 8.7c.5.9-.1 2-.9 2H12l-2.3-4h3.5l1.6 2.7h4.8L14.3 7.9c-.1-.2-.3-.3-.5-.3H9.6c-.2 0-.4.1-.5.3l-5 8.6h3.2l-1.1 1.9H4.1c-.8 0-1.4-1.1-.9-1.9z"/>
+            </svg>
+            <span>ArtStation</span>
+          </a>
+          <!-- personal Instagram -->
+          <a class="btn-solid btn-secondary" href="https://www.instagram.com/riku.yuki.darroch" target="_blank" rel="me external noopener noreferrer" aria-label="View Instagram profile">
+            <!-- Instagram Icon -->
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="4" y="4" width="16" height="16" rx="4" stroke-width="2" fill="none"/>
+              <circle cx="12" cy="12" r="3.5" stroke-width="2" fill="none"/>
+              <circle cx="17" cy="7" r="1.2"/>
+            </svg>
+            <span> Personal Instagram</span>
+          </a>
+  <!-- Art Instagram -->
+          <a class="btn-solid btn-secondary" href="https://www.instagram.com/Reekouu" target="_blank" rel="me external noopener noreferrer" aria-label="View Instagram profile">
+            <!-- Instagram Icon -->
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="4" y="4" width="16" height="16" rx="4" stroke-width="2" fill="none"/>
+              <circle cx="12" cy="12" r="3.5" stroke-width="2" fill="none"/>
+              <circle cx="17" cy="7" r="1.2"/>
+            </svg>
+            <span>Art Instagram</span>
+          </a>
+          <!-- YouTube -->
+          <a class="btn-solid btn-secondary" href="https://www.youtube.com/ioniguess" target="_blank" rel="me external noopener noreferrer" aria-label="View YouTube channel">
+            <!-- YouTube Icon -->
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="4" y="7" width="16" height="10" rx="2.5" stroke-width="2" fill="none"/>
+              <polygon points="10,9 16,12 10,15" />
+            </svg>
+            <span>YouTube</span>
+          </a>
 
-          <button class="button primary" type="submit">Send message</button>
-        </form>
+          <!-- Twitter / X -->
+          <a class="btn-solid btn-secondary" href="https://twitter.com/reekouu" target="_blank" rel="me external noopener noreferrer" aria-label="View Twitter/X profile">
+            <!-- “X” Icon (Twitter / X) -->
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 4h16v16H4z" fill="none"/>
+              <path d="M6 18l5-6.1L7 6h2.6l3 4.9L16.9 6H20l-5.1 6.3L18 18h-2.6l-3.2-5.2L8 18H6z" />
+            </svg>
+            <span>Twitter / X</span>
+          </a>
 
-        <ul class="contact-links" aria-label="Social links">
-          <li><a href="mailto:hello@yourdomain.com">hello@yourdomain.com</a></li>
-          <li><a href="https://www.linkedin.com/in/yourhandle" rel="me external" target="_blank">LinkedIn</a></li>
-          <li><a href="https://www.dribbble.com/yourhandle" rel="me external" target="_blank">Dribbble</a></li>
-          <li><a href="https://www.behance.net/yourhandle" rel="me external" target="_blank">Behance</a></li>
-        </ul>
+        </div>
+
+        <p class="contact-note">
+          If you prefer another channel, feel free to suggest it and I will accommodate where possible.
+        </p>
+
       </div>
     </section>
   </main>
 
+  <!-- Footer -->
   <footer class="site-footer">
     <div class="container footer-grid">
       <small>&copy; <span id="year"></span> Riku Darroch</small>
@@ -86,18 +213,18 @@
           <li><a href="artworks.html">Artworks</a></li>
           <li><a href="game-design.html">Game Design</a></li>
           <li><a href="graphic-design.html">Graphic Design</a></li>
-          <li><a href="about.html">About</a></li>
-          <li><a class="nav-link--cta" href="contact.html" aria-current="page">Contact</a></li>
+          <li><a aria-current="page" href="contact.html">Contact</a></li>
         </ul>
       </nav>
     </div>
   </footer>
 
+  <!-- Scripts -->
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
 
     const toggle = document.querySelector('.nav-toggle');
-    const menu = document.getElementById('primary-menu');
+    const menu  = document.getElementById('primary-menu');
     if (toggle && menu) {
       toggle.addEventListener('click', () => {
         const expanded = toggle.getAttribute('aria-expanded') === 'true';
