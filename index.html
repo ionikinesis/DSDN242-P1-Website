@@ -9,10 +9,27 @@
   <style>
     :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
     @media (prefers-reduced-motion: reduce) {
-      *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; scroll-behavior:auto!important; }
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
     }
-    /* Inline helper – you can move this into styles.css */
 
+    /* ===== Hover-only tilt — you can move this to styles.css ===== */
+    .tilt-card{
+      transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
+      transform-style: preserve-3d;
+      transition: transform 120ms ease;
+      will-change: transform;
+    }
+    .tilt-card.is-hovering{
+      transform: perspective(1000px)
+                 rotateX(var(--rx, 0deg))
+                 rotateY(var(--ry, 0deg));
+    }
+    .tilt-card[data-press="true"]{
+      transform: perspective(1000px)
+                 rotateX(calc(var(--rx, 0deg) * .85))
+                 rotateY(calc(var(--ry, 0deg) * .85))
+                 scale(.995);
+    }
   </style>
 </head>
 <body>
@@ -23,28 +40,29 @@
 
   <a class="skip-link" href="#main-content">Skip to content</a>
 
- <header class="site-header" role="banner">
-  <div class="container">
-    <a class="brand" href="index.html" aria-label="Home">
-      <img class="brand-logo" src="LOGO.png" alt="Riku Yuki Darroch logo" />
-    </a>
+  <header class="site-header" role="banner">
+    <div class="container">
+      <a class="brand" href="index.html" aria-label="Home">
+        <img class="brand-logo" src="LOGO.png" alt="Riku Yuki Darroch logo" />
+      </a>
 
-    <nav class="site-nav" aria-label="Primary">
-      <button class="nav-toggle" aria-expanded="false" aria-controls="primary-menu">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="hamburger" aria-hidden="true"></span>
-      </button>
-      <ul id="primary-menu">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="artworks.html">Artworks</a></li>
-        <li><a href="game-design.html">Game Design</a></li>
-        <li><a href="graphic-design.html">Graphic Design</a></li>
-        <li><a href="about.html">About</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
-    </nav>
-  </div>
-</header>
+      <nav class="site-nav" aria-label="Primary">
+        <button class="nav-toggle" aria-expanded="false" aria-controls="primary-menu">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="hamburger" aria-hidden="true"></span>
+        </button>
+        <ul id="primary-menu">
+          <li><a href="index.html" aria-current="page">Home</a></li>
+          <li><a href="artworks.html">Artworks</a></li>
+          <li><a href="game-design.html">Game Design</a></li>
+          <li><a href="graphic-design.html">Graphic Design</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
   <main id="main-content">
     <!-- Hero / Intro -->
     <section class="hero" aria-labelledby="hero-title">
@@ -57,11 +75,7 @@
             </p>
             <div class="hero-cta">
               <a class="nav-link--cta" href="contact.html">Get in touch</a>
-            </div>
-          </div>
-          <figure class="hero-figure">
-            <img src="images/hero-cover.jpg" alt="Collage of selected interface and brand explorations." loading="eager" />
-          </figure>
+         
         </div>
       </div>
     </section>
@@ -73,8 +87,8 @@
         <p class="section-intro">A few highlights across disciplines. Explore full categories from the top navigation.</p>
 
         <div class="grid grid-portfolio">
-          <!-- Card 1 -->
-          <article class="card project">
+          <!-- Card 1 (tilt enabled) -->
+          <article class="card project tilt-card">
             <a class="project-link" href="project-template.html">
               <figure class="project-thumb">
                 <img src="almost done.png" alt="Red Moon Concept Art Preview." loading="lazy" />
@@ -88,8 +102,8 @@
             </a>
           </article>
 
-          <!-- Card 2 -->
-          <article class="card project">
+          <!-- Card 2 (tilt enabled) -->
+          <article class="card project tilt-card">
             <a class="project-link" href="case-studies/project-02.html">
               <figure class="project-thumb">
                 <img src="images/project-02-thumb.jpg" alt="Reflection Concept Art Preview." loading="lazy" />
@@ -103,8 +117,8 @@
             </a>
           </article>
 
-          <!-- Card 3 -->
-          <article class="card project">
+          <!-- Card 3 (tilt enabled) -->
+          <article class="card project tilt-card">
             <a class="project-link" href="case-studies/project-03.html">
               <figure class="project-thumb">
                 <img src="album cover art.png" alt="Album art Preview." loading="lazy" />
@@ -118,8 +132,8 @@
             </a>
           </article>
 
-          <!-- Card 4 -->
-          <article class="card project">
+          <!-- Card 4 (tilt enabled) -->
+          <article class="card project tilt-card">
             <a class="project-link" href="case-studies/project-04.html">
               <figure class="project-thumb">
                 <img src="3E7825E3-E6DF-45F9-88AA-05536A53BCD9-7484-000002D0C700F917.jpg" alt="Photography Preview." loading="lazy" />
@@ -158,15 +172,66 @@
     document.getElementById('year').textContent = new Date().getFullYear();
 
     // Mobile nav toggle
-    const toggle = document.querySelector('.nav-toggle');
-    const menu = document.getElementById('primary-menu');
-    if (toggle && menu) {
+    (function(){
+      const toggle = document.querySelector('.nav-toggle');
+      const menu   = document.getElementById('primary-menu');
+      if (!toggle || !menu) return;
       toggle.addEventListener('click', () => {
         const expanded = toggle.getAttribute('aria-expanded') === 'true';
         toggle.setAttribute('aria-expanded', String(!expanded));
         menu.classList.toggle('open', !expanded);
       });
-    }
+    })();
+
+    // ===== Hover-only Tilt (only on project cards) =====
+    (function(){
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced) return;
+
+      const cards = Array.from(document.querySelectorAll('.card.project.tilt-card'));
+      if (!cards.length) return;
+
+      const MAX_DEG = 6; // adjust intensity
+
+      function setTilt(el, e){
+        const r = el.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+
+        const mx = (e.clientX - r.left) / r.width;   // 0..1
+        const my = (e.clientY - r.top)  / r.height;  // 0..1
+
+        const dx = mx - 0.5;
+        const dy = my - 0.5;
+
+        const ry =  MAX_DEG * dx;  // left/right
+        const rx = -MAX_DEG * dy;  // up/down (invert Y)
+
+        el.style.setProperty('--ry', ry.toFixed(2) + 'deg');
+        el.style.setProperty('--rx', rx.toFixed(2) + 'deg');
+      }
+      function resetTilt(el){
+        el.style.setProperty('--ry', '0deg');
+        el.style.setProperty('--rx', '0deg');
+        el.classList.remove('is-hovering');
+      }
+
+      cards.forEach(el => {
+        el.addEventListener('mouseenter', () => {
+          el.classList.add('is-hovering');
+        });
+        el.addEventListener('mousemove', (e) => {
+          if (!el.classList.contains('is-hovering')) return;
+          setTilt(el, e);
+        });
+        el.addEventListener('mouseleave', () => {
+          resetTilt(el);
+        });
+
+        // Optional pressed feel
+        el.addEventListener('mousedown', () => el.setAttribute('data-press','true'));
+        window.addEventListener('mouseup',   () => el.removeAttribute('data-press'));
+      });
+    })();
   </script>
 </body>
 </html>
