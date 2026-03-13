@@ -5,14 +5,114 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Riku Yuki Darroch Portfolio</title>
   <meta name="description" content="Riku Yuki Darroch Portfolio" />
+
+  <!-- Site stylesheet -->
   <link rel="stylesheet" href="styles.css" />
+
   <style>
     :focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+      *, *::before, *::after {
+        animation-duration:.01ms!important; transition-duration:.01ms!important; scroll-behavior:auto!important;
+      }
     }
 
-    /* ===== Hover-only tilt — you can move this to styles.css ===== */
+    /* =========================
+       Collapsing Body Masthead
+       ========================= */
+    :root{
+      --masthead-maxh: clamp(180px, 24vw, 420px); /* visual cap while expanded */
+      --masthead-pad: clamp(16px, 3vw, 32px);
+      --masthead-t: 260ms;
+      --page-maxw: 1180px; /* align with your site width */
+    }
+
+    .masthead-body{
+      position: relative;
+      z-index: 2;
+      margin: 0;
+      padding: var(--masthead-pad) 0;
+      max-height: calc(var(--masthead-maxh) + var(--masthead-pad) * 2);
+      overflow: hidden;
+      transition: max-height var(--masthead-t) ease,
+                  padding var(--masthead-t) ease,
+                  opacity var(--masthead-t) ease;
+      opacity: 1;
+    }
+    .masthead-inner{
+      max-width: var(--page-maxw);
+      margin-inline: auto;
+      padding: 0 var(--space-5);
+      display: grid;
+      gap: clamp(8px, 1.5vw, 16px);
+      place-items: center;
+      text-align: center;
+      position: relative;
+    }
+
+    /* Logo + WebGL overlay container */
+    .logo-distort{
+      position: relative;
+      width: 100%;
+    }
+    .logo-distort canvas{
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent; /* ensure canvas is transparent */
+      display: none;           /* enabled via JS when GL starts */
+    }
+    .logo-distort.gl-active canvas{ display: block; }
+    .logo-distort.gl-active .logo-wide{ opacity: 0; } /* hide fallback while GL active */
+
+    /* Fallback big logo image (also drives canvas sizing) */
+    .logo-wide{
+      display: block;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 8px 24px rgba(0,0,0,.35));
+      transition: opacity var(--masthead-t) ease;
+    }
+
+    /* Centered tagline under the logo */
+    .masthead-tagline{
+      /* If your headings use a custom font, put it here to match exactly */
+      /* font-family: "Poppins", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; */
+      font-weight: 700;
+      letter-spacing: .3px;
+      font-size: clamp(18px, 2.2vw, 28px);
+      line-height: 1.15;
+      color: var(--text-100);
+      margin: 0;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* Hide the small header logo at the very top to avoid double-branding */
+    body:not(.is-scrolled) .site-header .brand-logo{
+      opacity: 0;
+      transform: translateY(4px) scale(.96);
+      pointer-events: none;
+      transition: opacity var(--masthead-t) ease, transform var(--masthead-t) ease;
+    }
+    /* Collapse masthead & reveal small header logo on scroll */
+    body.is-scrolled .masthead-body{
+      max-height: 0;
+      padding: 0;
+      opacity: 0;
+    }
+    body.is-scrolled .site-header .brand-logo{
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+      transition: opacity var(--masthead-t) ease, transform var(--masthead-t) ease;
+    }
+
+    /* =========================
+       Hover-only tilt for cards
+       ========================= */
     .tilt-card{
       transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
       transform-style: preserve-3d;
@@ -40,6 +140,7 @@
 
   <a class="skip-link" href="#main-content">Skip to content</a>
 
+  <!-- Header -->
   <header class="site-header" role="banner">
     <div class="container">
       <a class="brand" href="index.html" aria-label="Home">
@@ -63,23 +164,18 @@
     </div>
   </header>
 
-  <main id="main-content">
-    <!-- Hero / Intro -->
-    <section class="hero" aria-labelledby="hero-title">
-      <div class="container">
-        <div class="grid hero-grid">
-          <div class="hero-content">
-            <h1 id="hero-title">Riku Yuki Darroch — Game Designer, Artist, Creative Jack‑of‑all‑Trades</h1>
-            <p class="lead">
-              I'm a visual designer exploring the expression of art and narrative through visual and interactive mediums.
-            </p>
-            <div class="hero-cta">
-              <a class="nav-link--cta" href="contact.html">Get in touch</a>
-         
-        </div>
+  <!-- BODY-LEVEL MASTHEAD (in flow; GL overlay lives here) -->
+  <section class="masthead-body" aria-label="Site masthead">
+    <div class="masthead-inner">
+      <div class="logo-distort" data-logo-src="LOGO.png">
+        <img class="logo-wide" src="LOGO.png" alt="RIKU YUKI DARROCH wordmark" />
+        <canvas id="logoGL" aria-hidden="true"></canvas>
       </div>
-    </section>
+      <h2 class="masthead-tagline">Artist, Designer, Creative Jack of All Trades</h2>
+    </div>
+  </section>
 
+  <main id="main-content">
     <!-- Selected Work -->
     <section id="work" class="work" aria-labelledby="work-title">
       <div class="container">
@@ -183,7 +279,271 @@
       });
     })();
 
-    // ===== Hover-only Tilt (only on project cards) =====
+    // Collapsing masthead: toggle 'is-scrolled' on body
+    (function(){
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const THRESHOLD = 40; // px after which masthead collapses
+      function update(){
+        if (window.scrollY > THRESHOLD) document.body.classList.add('is-scrolled');
+        else document.body.classList.remove('is-scrolled');
+      }
+      window.addEventListener('scroll', () => { if (!prefersReduced) update(); }, { passive: true });
+      window.addEventListener('load', update);
+    })();
+
+    // =========================
+    // WebGL Logo Distortion + Chromatic Aberration (big logo only)
+    // + smooth return to original when mouse leaves
+    // + robust resizing on expand/collapse
+    // =========================
+    (function(){
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced) return;
+
+      const holder = document.querySelector('.logo-distort');
+      const img = holder?.querySelector('.logo-wide');
+      const canvas = holder?.querySelector('#logoGL');
+      if (!holder || !img || !canvas) return;
+
+      // Transparent canvas + non-premultiplied alpha for correct page blending
+      const gl = canvas.getContext('webgl', { alpha: true, antialias: true, premultipliedAlpha: false }) ||
+                 canvas.getContext('experimental-webgl');
+      if (!gl) return; // fallback: keep static image
+
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      gl.clearColor(0,0,0,0); // fully transparent
+
+      // Show GL, hide static fallback (fallback keeps layout height)
+      holder.classList.add('gl-active');
+
+      // ---------- Shader sources ----------
+      const VS = `
+        attribute vec2 a_pos;
+        attribute vec2 a_uv;
+        varying vec2 v_uv;
+        void main(){
+          v_uv = a_uv;
+          gl_Position = vec4(a_pos, 0.0, 1.0);
+        }
+      `;
+
+      const FS = `
+        precision mediump float;
+        varying vec2 v_uv;
+        uniform sampler2D u_tex;
+        uniform vec2 u_res;
+        uniform vec2 u_mouse;     // 0..1 (UV orientation: bottom-up after flip)
+        uniform float u_time;
+        uniform float u_strength; // base displacement magnitude
+        uniform float u_radius;   // influence radius
+        uniform float u_ca;       // chromatic aberration magnitude
+        uniform float u_mix;      // 0..1, fades effect on/off (0 = original logo)
+
+        float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453123); }
+        float noise(vec2 p){
+          vec2 i = floor(p), f = fract(p);
+          float a = hash(i);
+          float b = hash(i + vec2(1.0, 0.0));
+          float c = hash(i + vec2(0.0, 1.0));
+          float d = hash(i + vec2(1.0, 1.0));
+          vec2 u = f*f*(3.0-2.0*f);
+          return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);
+        }
+
+        void main(){
+          vec2 uv = v_uv;
+          vec2 m  = u_mouse;
+
+          vec2 d  = uv - m;
+          float r = length(d);
+          float f = smoothstep(u_radius, 0.0, r); // 0 at edge → 1 at center
+
+          float t  = u_time * 0.5;
+          float wob = noise(uv * 6.0 + vec2(t*0.7, t*1.1)) * 2.0 - 1.0;
+          vec2 dir = normalize(d + 1e-6);
+
+          float mixAmt = clamp(u_mix, 0.0, 1.0);
+          vec2 disp = dir * f * (u_strength * (0.6 + 0.4*wob)) * mixAmt;
+
+          float caMag = u_ca * mixAmt;
+          vec2 caR =  disp * caMag;
+          vec2 caB = -disp * caMag;
+
+          vec2 baseUV = uv + disp;
+
+          vec4 rSamp = texture2D(u_tex, clamp(baseUV + caR, 0.0, 1.0));
+          vec4 gSamp = texture2D(u_tex, clamp(baseUV,       0.0, 1.0));
+          vec4 bSamp = texture2D(u_tex, clamp(baseUV + caB, 0.0, 1.0));
+
+          vec3 col = vec3(rSamp.r, gSamp.g, bSamp.b);
+          float a  = max(max(rSamp.a, gSamp.a), bSamp.a);
+
+          gl_FragColor = vec4(col, a); // preserve PNG alpha (transparent outside letters)
+        }
+      `;
+
+      // ---------- Build program ----------
+      function compile(type, src){
+        const sh = gl.createShader(type);
+        gl.shaderSource(sh, src);
+        gl.compileShader(sh);
+        if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+          console.warn(gl.getShaderInfoLog(sh));
+          gl.deleteShader(sh); return null;
+        }
+        return sh;
+      }
+      function program(vs, fs){
+        const p = gl.createProgram();
+        gl.attachShader(p, vs); gl.attachShader(p, fs);
+        gl.linkProgram(p);
+        if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+          console.warn(gl.getProgramInfoLog(p));
+          gl.deleteProgram(p); return null;
+        }
+        return p;
+      }
+      const vs = compile(gl.VERTEX_SHADER, VS);
+      const fs = compile(gl.FRAGMENT_SHADER, FS);
+      const prog = program(vs, fs);
+      if (!prog) return;
+
+      // ---------- Geometry ----------
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      const verts = new Float32Array([
+        // x, y, u, v
+        -1, -1, 0, 0,
+         1, -1, 1, 0,
+        -1,  1, 0, 1,
+         1,  1, 1, 1
+      ]);
+      gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+
+      const a_pos = gl.getAttribLocation(prog, 'a_pos');
+      const a_uv  = gl.getAttribLocation(prog, 'a_uv');
+      const STRIDE = 4 * Float32Array.BYTES_PER_ELEMENT;
+      gl.vertexAttribPointer(a_pos, 2, gl.FLOAT, false, STRIDE, 0);
+      gl.enableVertexAttribArray(a_pos);
+      gl.vertexAttribPointer(a_uv,  2, gl.FLOAT, false, STRIDE, 2*4);
+      gl.enableVertexAttribArray(a_uv);
+
+      // ---------- Uniforms ----------
+      const u_tex      = gl.getUniformLocation(prog, 'u_tex');
+      const u_res      = gl.getUniformLocation(prog, 'u_res');
+      const u_mouse    = gl.getUniformLocation(prog, 'u_mouse');
+      const u_time     = gl.getUniformLocation(prog, 'u_time');
+      const u_strength = gl.getUniformLocation(prog, 'u_strength');
+      const u_radius   = gl.getUniformLocation(prog, 'u_radius');
+      const u_ca       = gl.getUniformLocation(prog, 'u_ca');
+      const u_mix      = gl.getUniformLocation(prog, 'u_mix');
+
+      // ---------- Texture (logo) ----------
+      const tex = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+      const src = holder.getAttribute('data-logo-src') || img.getAttribute('src');
+      const logo = new Image();
+      logo.crossOrigin = 'anonymous';
+      logo.onload = () => {
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        // Flip Y so letters are upright
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, logo);
+        resize();
+        requestAnimationFrame(tick);
+      };
+      logo.src = src;
+
+      // ---------- Resizing ----------
+      function resize(){
+        const r = img.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const w = Math.max(2, Math.round(r.width  * dpr));
+        const h = Math.max(2, Math.round(r.height * dpr));
+
+        canvas.style.width  = Math.round(r.width) + 'px';
+        canvas.style.height = Math.round(r.height) + 'px';
+        if (canvas.width !== w || canvas.height !== h){
+          canvas.width  = w;
+          canvas.height = h;
+          gl.viewport(0, 0, w, h);
+        }
+      }
+      window.addEventListener('resize', resize);
+
+      // NEW: ResizeObserver → keeps canvas in sync when masthead expands/collapses
+      const ro = new ResizeObserver(resize);
+      ro.observe(holder);
+
+      // ---------- Mouse + easing ----------
+      let tPrev = performance.now();
+      let mouse = { x: 0.5, y: 0.5 };
+      let mixAmt = 0.0;     // current fade 0..1
+      let targetMix = 0.0;  // 1 while hovering, 0 when not
+      const EASE_PER_SEC = 5; // ↑ faster snapback; ↓ slower floaty return
+
+      holder.addEventListener('mousemove', (e) => {
+        const r = canvas.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width;
+        const y = (e.clientY - r.top)  / r.height;
+        mouse.x = x;
+        mouse.y = 1.0 - y; // DOM top-down → UV bottom-up
+      });
+      holder.addEventListener('mouseenter', () => { targetMix = 1.0; });
+      holder.addEventListener('mouseleave', () => { targetMix = 0.0; });
+
+      // Pause GL when masthead collapses; reactivate on expand
+      let paused = false;
+      const observer = new MutationObserver(() => {
+        paused = document.body.classList.contains('is-scrolled');
+        holder.classList.toggle('gl-active', !paused);
+        if (paused) targetMix = 0.0; // ease out while collapsed
+        // On expand, ensure canvas is the right size immediately
+        if (!paused) resize();
+      });
+      observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+      // ---------- Render loop ----------
+      function tick(now){
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        // dt in seconds (clamped for stability)
+        const dt = Math.min(0.05, (now - tPrev) * 0.001);
+        tPrev = now;
+
+        // Ease mixAmt → targetMix (bugfix: use EASE_PER_SEC, not a misspelled var)
+        mixAmt += (targetMix - mixAmt) * Math.min(1, dt * EASE_PER_SEC);
+
+        if (!paused){
+          gl.useProgram(prog);
+          gl.uniform1i(u_tex, 0);
+          gl.activeTexture(gl.TEXTURE0);
+          gl.bindTexture(gl.TEXTURE_2D, tex);
+          gl.uniform2f(u_res, canvas.width, canvas.height);
+          gl.uniform2f(u_mouse, mouse.x, mouse.y);
+          gl.uniform1f(u_time, now * 0.001);
+
+          // Your parameters
+          gl.uniform1f(u_strength, 0.03); // displacement magnitude
+          gl.uniform1f(u_radius,   0.9);  // wide influence
+          gl.uniform1f(u_ca,       1.9);  // strong CA
+
+          // Fade (0..1): 1 when hovering, eases to 0 when not
+          gl.uniform1f(u_mix, mixAmt);
+
+          gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        }
+        requestAnimationFrame(tick);
+      }
+    })();
+
+    // Hover-only Tilt (only on project cards)
     (function(){
       const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (prefersReduced) return;
@@ -191,21 +551,17 @@
       const cards = Array.from(document.querySelectorAll('.card.project.tilt-card'));
       if (!cards.length) return;
 
-      const MAX_DEG = 6; // adjust intensity
+      const MAX_DEG = 6;
 
       function setTilt(el, e){
         const r = el.getBoundingClientRect();
         if (!r.width || !r.height) return;
-
-        const mx = (e.clientX - r.left) / r.width;   // 0..1
-        const my = (e.clientY - r.top)  / r.height;  // 0..1
-
+        const mx = (e.clientX - r.left) / r.width;
+        const my = (e.clientY - r.top)  / r.height;
         const dx = mx - 0.5;
         const dy = my - 0.5;
-
-        const ry =  MAX_DEG * dx;  // left/right
-        const rx = -MAX_DEG * dy;  // up/down (invert Y)
-
+        const ry =  MAX_DEG * dx;
+        const rx = -MAX_DEG * dy;
         el.style.setProperty('--ry', ry.toFixed(2) + 'deg');
         el.style.setProperty('--rx', rx.toFixed(2) + 'deg');
       }
@@ -214,20 +570,10 @@
         el.style.setProperty('--rx', '0deg');
         el.classList.remove('is-hovering');
       }
-
       cards.forEach(el => {
-        el.addEventListener('mouseenter', () => {
-          el.classList.add('is-hovering');
-        });
-        el.addEventListener('mousemove', (e) => {
-          if (!el.classList.contains('is-hovering')) return;
-          setTilt(el, e);
-        });
-        el.addEventListener('mouseleave', () => {
-          resetTilt(el);
-        });
-
-        // Optional pressed feel
+        el.addEventListener('mouseenter', () => el.classList.add('is-hovering'));
+        el.addEventListener('mousemove',  (e) => { if (el.classList.contains('is-hovering')) setTilt(el, e); });
+        el.addEventListener('mouseleave', () => resetTilt(el));
         el.addEventListener('mousedown', () => el.setAttribute('data-press','true'));
         window.addEventListener('mouseup',   () => el.removeAttribute('data-press'));
       });
