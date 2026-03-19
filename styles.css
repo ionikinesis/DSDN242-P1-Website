@@ -238,3 +238,11 @@ input:focus-visible,textarea:focus-visible{ border-color: var(--cyan); outline-c
 .footer-links{ list-style:none; display:flex; align-items:center; gap:1rem; margin:0; padding:0; }
 .footer-links a{ padding:.45rem .65rem; border-radius:8px; border:1px solid transparent; }
 .footer-links a:hover{ background-color: rgba(22,36,73,.36); border-color: rgba(255,255,255,.16); }
+/* Tilt-on-hover: local 3D context for each card */
+.wheel-card{
+  transform: perspective(900px) rotateX(var(--tiltX, 0deg)) rotateY(var(--tiltY, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 120ms ease;
+  will-change: transform;
+  pointer-events: auto; /* make sure the card can receive pointer events */
+}

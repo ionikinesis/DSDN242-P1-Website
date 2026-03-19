@@ -678,5 +678,63 @@
       requestAnimationFrame(tick);
     })();
   </script>
+  <script>
+/* =========================================================
+   Tilt-on-hover for carousel cards (delegated & robust)
+   - Tilts only the card under the cursor
+   - Resets on leave
+   - Works despite the <a.wheel-item> wrapper and ring rotation
+   ========================================================= */
+(function tiltCardsInCarousel(){
+  const track = document.querySelector('[data-wheel] [data-track]');
+  if (!track) return;
+
+  const MAX_DEG = 8;   // tilt strength
+  let activeCard = null;
+
+  // Find the actual .wheel-card under an event target
+  function findCard(el){
+    return el?.closest ? el.closest('.wheel-card') : null;
+  }
+
+  function setTilt(card, e){
+    const r = card.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    const x = (e.clientX - r.left) / r.width;    // 0..1
+    const y = (e.clientY - r.top)  / r.height;   // 0..1
+    const dx = x - 0.5, dy = y - 0.5;
+    card.style.setProperty('--tiltY',  ( dx * MAX_DEG).toFixed(2) + 'deg');
+    card.style.setProperty('--tiltX', (-dy * MAX_DEG).toFixed(2) + 'deg');
+  }
+
+  function resetTilt(card){
+    card.style.setProperty('--tiltX', '0deg');
+    card.style.setProperty('--tiltY', '0deg');
+  }
+
+  // Enter: start tracking the card under the pointer
+  track.addEventListener('pointerenter', (e)=>{
+    const card = findCard(e.target);
+    if (!card) return;
+    activeCard = card;
+    setTilt(card, e);
+  }, true);
+
+  // Move: update tilt; if pointer moves to a different card, switch
+  track.addEventListener('pointermove', (e)=>{
+    const current = findCard(e.target);
+    if (!current) return;
+    if (activeCard && current !== activeCard) resetTilt(activeCard);
+    activeCard = current;
+    setTilt(activeCard, e);
+  });
+
+  // Leave: reset
+  track.addEventListener('pointerleave', ()=>{
+    if (activeCard) resetTilt(activeCard);
+    activeCard = null;
+  }, true);
+})();
+</script>
 </body>
 </html>
