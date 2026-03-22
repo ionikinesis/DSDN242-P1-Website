@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Riku Yuki Darroch Portfolio</title>
-  <meta name="description" content="Riku Yuki Darroch Portfolio" />
+  <title>Riku Yuki Darroch — Portfolio</title>
+  <meta name="description" content="Portfolio of Riku Yuki Darroch — artist, designer, creative jack of all trades." />
 
-  <!-- Site stylesheet -->
+  <link rel="icon" type="image/png" href="favicon.png" />
   <link rel="stylesheet" href="styles.css" />
 
   <style>
@@ -15,185 +15,436 @@
       *, *::before, *::after { animation-duration:.01ms!important; transition-duration:.01ms!important; scroll-behavior:auto!important; }
     }
 
-    /* ======================================
-       Page-wide scroll behavior
-       ====================================== */
-    html, body { height: 100%; overscroll-behavior-y: none; }
-    html { scroll-snap-type: y mandatory; }
-    .snap { scroll-snap-align: center; scroll-snap-stop: always; }
+    html { scroll-behavior: smooth; }
+    body { overscroll-behavior-y: none; }
 
-    /* ======================================
-       Masthead (big logo area inside body)
-       ====================================== */
-    :root{
-      /* A touch taller so the subtitle never crops */
-      --masthead-maxh: clamp(260px, 30vw, 560px);
-      --masthead-pad: clamp(16px, 3vw, 32px);
-      --masthead-gap: clamp(28px, 7vh, 84px); /* gap after collapse so we don't overshoot next section */
-      --masthead-t: 260ms;
-      --page-maxw: 1180px;
+    /* ── Kill any scroll-snap from old Copilot code ── */
+    html { scroll-snap-type: none !important; }
+    * { scroll-snap-align: none !important; scroll-snap-stop: unset !important; }
+
+    /* ── Header always fixed to top, never scrolls away ── */
+    .site-header {
+      position: fixed !important;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+    }
+    /* Push body content down so it starts below the fixed header */
+    .masthead-body {
+      margin-top: 80px;
+    }
+
+    :root {
+      --masthead-t: 280ms;
+      --page-maxw:  1180px;
       --text-100: #ffffff;
-      --text-300: #cdd6ea;
       --text-200: #b4bdd6;
+      --text-300: #cdd6ea;
+      --moon: #f1e6c7;
+      --teal: #5fe3c9;
     }
 
-    .masthead-body{
-      position: relative;
-      z-index: 2;
-      margin: 0;
-      padding: var(--masthead-pad) 0;
-      max-height: calc(var(--masthead-maxh) + var(--masthead-pad) * 2);
-      overflow: visible; /* show everything while expanded */
-      transition: max-height var(--masthead-t) ease,
-                  padding var(--masthead-t) ease,
-                  opacity var(--masthead-t) ease,
-                  margin var(--masthead-t) ease;
-      opacity: 1;
+    /* ═══════════════════════════
+       MASTHEAD
+       ═══════════════════════════ */
+    .masthead-body {
+      position: relative; z-index: 2;
+      padding: clamp(40px,6vw,80px) 0 clamp(28px,4vw,56px);
+      max-height: 700px; overflow: visible; opacity: 1;
+      transition:
+        max-height var(--masthead-t) ease,
+        padding    var(--masthead-t) ease,
+        opacity    var(--masthead-t) ease,
+        margin     var(--masthead-t) ease;
     }
-    body.is-scrolled .masthead-body{ overflow: hidden; } /* only clip while collapsing */
-
-    .masthead-inner{
-      max-width: var(--page-maxw);
-      margin-inline: auto;
-      padding: 0 24px; /* safe side padding */
-      display: grid;
-      gap: clamp(16px, 3vw, 30px);
-      place-items: center;
-      text-align: center;
+    body.is-scrolled .masthead-body {
+      max-height: 0; padding: 0; opacity: 0;
+      overflow: hidden; margin-bottom: clamp(16px,3vh,36px);
     }
-
-    .logo-distort{ position: relative; width: 100%; }
-    .logo-distort canvas{
+    .masthead-inner {
+      max-width: var(--page-maxw); margin-inline: auto; padding: 0 24px;
+      display: grid; gap: clamp(14px,2.5vw,28px);
+      place-items: center; text-align: center;
+    }
+    .logo-distort { position: relative; width: 100%; }
+    .logo-distort canvas {
       position: absolute; inset: 0; width: 100%; height: 100%;
       background: transparent; display: none;
     }
-    .logo-distort.gl-active canvas{ display: block; }
-    .logo-distort.gl-active .logo-wide{ opacity: 0; transition: opacity var(--masthead-t) ease; }
-    .logo-wide{
+    .logo-distort.gl-active canvas { display: block; }
+    .logo-distort.gl-active .logo-wide { opacity: 0; transition: opacity var(--masthead-t) ease; }
+    .logo-wide {
       display: block; width: 100%; height: auto; object-fit: contain;
       filter: drop-shadow(0 8px 24px rgba(0,0,0,.35));
     }
-    .masthead-tagline{
+    .masthead-tagline {
       font-weight: 700; letter-spacing: .3px;
-      font-size: clamp(18px, 2.2vw, 30px);
-      line-height: 1.2; /* prevent crop across fonts */
-      color: var(--text-100);
-      margin: 0; width: 100%; text-align: center; white-space: normal;
+      font-size: clamp(14px,2vw,28px); line-height: 1.2;
+      color: var(--text-100); margin: 0;
     }
-
-    /* Small header brand handling while at the very top */
-    body:not(.is-scrolled) .site-header .brand-logo{
-      opacity: 0; transform: translateY(4px) scale(.96);
-      pointer-events: none;
+    /* Logo hidden in header while masthead is on screen,
+       snaps back in when masthead collapses on scroll */
+    body:not(.is-scrolled) .site-header .brand-logo {
+      opacity: 0; transform: translateY(4px) scale(.96); pointer-events: none;
       transition: opacity var(--masthead-t) ease, transform var(--masthead-t) ease;
     }
-    /* Collapse masthead & reveal small header logo; keep extra gap below */
-    body.is-scrolled .masthead-body{
-      max-height: 0; padding: 0; opacity: 0; margin: 0 0 var(--masthead-gap) 0;
-    }
-    body.is-scrolled .site-header .brand-logo{
+    body.is-scrolled .site-header .brand-logo {
       opacity: 1; transform: none; pointer-events: auto;
       transition: opacity var(--masthead-t) ease, transform var(--masthead-t) ease;
     }
 
-    /* ======================================
-       Wheel Carousel (BIGGER cards, spaced)
-       ====================================== */
-    .wheel-section{ padding: clamp(24px, 4vh, 40px) 0; }
-    .wheel-section .container{ max-width: var(--page-maxw); padding: 0 24px; }
-
-    .wheel-viewport{
-      position: relative;
-      height: clamp(680px, 78vh, 1080px); /* tall for larger cards */
-      perspective: 1800px;
-      overflow: hidden;
-      border-radius: 24px;
+    /* ═══════════════════════════
+       SECTION DIVIDERS
+       ═══════════════════════════ */
+    /* Each merged section gets a scroll-target id and generous padding
+       so the sticky header doesn't cover the heading */
+    .page-section {
+      scroll-margin-top: 90px; /* clears the sticky header */
     }
-    .wheel-track{
-      position:absolute; inset:0;
-      transform-style: preserve-3d;
+
+    /* ═══════════════════════════
+       CAROUSEL (Home / Selected Work)
+       ═══════════════════════════ */
+    .wheel-section { padding: clamp(8px,1.5vh,20px) 0 clamp(32px,5vh,64px); }
+    .wheel-section .container { max-width: var(--page-maxw); padding: 0 16px; }
+    .section-intro { color: var(--text-300); margin: 0 0 14px; }
+
+    .wheel-viewport {
+      position: relative; width: 100%;
+      overflow: hidden; border-radius: 20px;
+      touch-action: pan-y;
+    }
+    .wheel-track {
+      display: flex;
+      transition: transform 380ms cubic-bezier(.4,0,.2,1);
       will-change: transform;
-      touch-action: pan-y; /* allow vertical page scroll by default */
     }
-
-    /* Arrows */
-    .wheel-arrows{
-      position:absolute; inset:0; pointer-events:none;
-      display:flex; align-items:center; justify-content:space-between;
-      padding: 0 14px; z-index: 3;
+    .wheel-track.is-dragging { transition: none; }
+    .wheel-item {
+      flex: 0 0 100%; display: flex;
+      justify-content: center; align-items: center;
+      padding: 8px 16px 16px;
+      text-decoration: none; color: inherit; box-sizing: border-box;
     }
-    .wheel-arrow{
-      pointer-events:auto;
-      display:grid; place-items:center;
-      width: 50px; height: 50px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.35);
-      background: rgba(16,26,51,.45);
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      color: var(--text-100);
-      cursor: pointer;
-      transition: transform .15s ease, background-color .15s ease, border-color .15s ease;
-      user-select: none;
-    }
-    .wheel-arrow:hover{ transform: scale(1.08); background: rgba(16,26,51,.65); border-color: rgba(255,255,255,.5); }
-    .wheel-arrow svg{ width: 24px; height: 24px; }
-
-    /* Items on the ring */
-    .wheel-item{
-      position:absolute; top:50%; left:50%;
-      transform-style: preserve-3d;
-      will-change: transform, opacity;
-      transition: filter .2s ease;
-      text-decoration: none; color: inherit;
-    }
-
-    /* BIG cards (reduce negative space) + TILT */
-    .wheel-card{
-      width: clamp(560px, 68vw, 980px);
-      border-radius: 26px;
+    .wheel-card {
+      width: 100%; max-width: clamp(320px,72vw,720px);
+      border-radius: 20px;
       border: 1px solid rgba(255,255,255,.18);
-      background-color: rgba(16,26,51,.32);
+      background-color: rgba(16,26,51,.34);
       backdrop-filter: blur(14px) saturate(140%) contrast(108%);
       -webkit-backdrop-filter: blur(14px) saturate(140%) contrast(108%);
-      box-shadow: 0 18px 38px rgba(0,0,0,.35);
+      box-shadow: 0 14px 36px rgba(0,0,0,.40);
       overflow: hidden;
+      transform: perspective(900px) rotateX(var(--tiltX,0deg)) rotateY(var(--tiltY,0deg));
+      transform-style: preserve-3d; transition: transform 100ms ease;
+      will-change: transform; cursor: pointer;
+    }
+    .wheel-card figure { margin: 0; }
+    .wheel-card img { display: block; width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; }
+    .wheel-card .project-meta { padding: 14px 18px 20px; }
+    .wheel-card .project-title  { margin: 0 0 5px; font-size: clamp(15px,2.2vw,24px); }
+    .wheel-card .project-tags   { color: var(--text-300); font-size: .9rem; margin: 0 0 5px; }
+    .wheel-card .project-blurb  { color: var(--text-200); margin: 0 0 9px; font-size: .95rem; }
+    .wheel-card .project-cta    { color: var(--teal); font-weight: 700; font-size: .9rem; }
 
-      /* tilt-on-hover context (added) */
-      transform: perspective(900px) rotateX(var(--tiltX, 0deg)) rotateY(var(--tiltY, 0deg));
+    .wheel-arrows {
+      position: absolute; inset: 0; pointer-events: none;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 6px; z-index: 10;
+    }
+    .wheel-arrow {
+      pointer-events: auto; display: grid; place-items: center;
+      width: 44px; height: 44px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.28);
+      background: rgba(16,26,51,.46);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      color: var(--text-100); cursor: pointer;
+      transition: transform .15s ease, background-color .15s ease;
+      user-select: none; flex-shrink: 0;
+    }
+    .wheel-arrow:hover { transform: scale(1.1); background: rgba(16,26,51,.70); }
+    .wheel-arrow svg { width: 22px; height: 22px; }
+    @media (max-width: 480px) { .wheel-arrows { display: none; } }
+
+    .wheel-dots {
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; margin-top: 16px;
+    }
+    .wheel-dot {
+      width: 7px; height: 7px; border-radius: 999px;
+      background: rgba(255,255,255,.22);
+      border: none; padding: 0; cursor: pointer;
+      transition: background .25s ease, transform .25s ease;
+      position: relative;
+    }
+    .wheel-dot::after { content:''; position:absolute; inset:-8px; }
+    .wheel-dot[aria-current="true"] { background: var(--moon); transform: scale(1.45); }
+
+    /* ═══════════════════════════
+       TILT CARDS (artworks / game / graphic)
+       ═══════════════════════════ */
+    .tilt-card {
+      transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
       transform-style: preserve-3d;
       transition: transform 120ms ease;
       will-change: transform;
-      pointer-events: auto;
     }
-    .wheel-card figure{ margin:0; }
-    .wheel-card img{ display:block; width:100%; height:auto; aspect-ratio: 16/9; object-fit: cover; }
-    .project-meta{ padding: 22px 24px 26px; }
-    .project-title{ margin: 0 0 10px; font-size: clamp(22px, 2.6vw, 32px); }
-    .project-tags{ color: var(--text-300); font-size: 1.05rem; margin:0 0 10px; }
-    .project-blurb{ color: var(--text-200); margin: 0 0 14px; font-size: 1.08rem; }
-    .project-cta{ color: var(--text-100); font-weight: 600; }
+    .tilt-card.is-hovering {
+      transform: perspective(1000px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+    }
+    .tilt-card[data-press="true"] {
+      transform: perspective(1000px)
+        rotateX(calc(var(--rx,0deg)*.85))
+        rotateY(calc(var(--ry,0deg)*.85))
+        scale(.995);
+    }
 
-    /* Footer above the blur veil */
-    .bg-blur{ pointer-events: none; z-index: 1; }
-    .site-footer{ position: relative; z-index: 4; }
+    /* ═══════════════════════════
+       CONTACT BUTTONS (from contact.html)
+       ═══════════════════════════ */
+    .contact-header { max-width: 760px; }
+    .contact-actions {
+      display: grid; gap: var(--space-4,1rem);
+      margin-top: var(--space-6,2rem); max-width: 520px;
+    }
+    .btn-solid {
+      display: flex; align-items: center; gap: 0.75rem;
+      width: 100%; font-weight: 700; letter-spacing: 0.2px;
+      padding: 1rem 1.25rem; border-radius: 12px;
+      color: #061018; background: var(--moon);
+      border: 1px solid var(--moon);
+      box-shadow: 0 10px 28px rgba(0,0,0,.35);
+      transition: transform .15s ease, box-shadow .25s ease, background-color .2s ease;
+      text-decoration: none;
+    }
+    .btn-solid:hover, .btn-solid:focus-visible {
+      transform: translateY(-2px); background: #ffe29a;
+      border-color: #ffe29a; box-shadow: 0 18px 48px rgba(0,0,0,.55);
+    }
+    .btn-secondary {
+      background: rgba(16,26,51,.55); border-color: rgba(255,255,255,.22);
+      color: var(--text-100);
+    }
+    .btn-secondary:hover, .btn-secondary:focus-visible {
+      background: rgba(16,26,51,.70); border-color: rgba(255,255,255,.30);
+      color: var(--text-100);
+    }
+    .btn-solid svg { width:22px; height:22px; flex-shrink:0; stroke:currentColor; fill:currentColor; }
+    .contact-note { margin-top:var(--space-4,1rem); color:var(--text-300); font-size:.95rem; max-width:520px; }
 
-    /* Sections that should snap */
-    .masthead-body.snap,
-    .wheel-section.snap,
-    .site-footer.snap{ scroll-snap-align: center; scroll-snap-stop: always; }
+    /* ═══════════════════════════
+       ABOUT layout
+       ═══════════════════════════ */
+    .about-grid {
+      display: grid;
+      grid-template-columns: min(420px,45vw) 1fr;
+      gap: var(--space-7,3rem); align-items: start;
+    }
+    .about-photo { max-width: 420px; }
+    .about-photo img { width:100%; height:auto; border-radius:var(--radius-lg,22px); box-shadow:var(--shadow-1,0 20px 48px rgba(0,0,0,.4)); object-fit:cover; }
+    .about-content { display:grid; gap:var(--space-5,1.5rem); }
+    .about-list { margin:var(--space-3,.75rem) 0; padding-left:1.25em; color:var(--text-200); }
+    .about-list li { margin-bottom:.4rem; }
+    .about-cta { margin-top: var(--space-4,1rem); }
+    .button {
+      display: inline-block; padding: .75rem 1.5rem;
+      border-radius: 12px; font-weight: 700;
+      background: var(--moon); color: #061018;
+      border: 1px solid var(--moon);
+      transition: transform .15s ease, box-shadow .2s ease;
+      text-decoration: none;
+    }
+    .button:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,.35); }
+    @media (max-width:900px) {
+      .about-grid { grid-template-columns:1fr; }
+      .about-photo { max-width:520px; margin-inline:auto; }
+    }
+
+    .bg-blur { pointer-events: none; z-index: 1; }
+
+    /* Smooth-scroll offset for anchor links from nav */
+    :target { scroll-margin-top: 90px; }
+  
+    /* ═══════════════════════════
+       ARTWORK THUMBNAIL GRID
+       ═══════════════════════════ */
+    .art-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-top: var(--space-5, 1.5rem);
+    }
+    @media (max-width: 700px) {
+      .art-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    }
+    @media (max-width: 420px) {
+      .art-grid { grid-template-columns: repeat(2, 1fr); gap: 5px; }
+    }
+
+    .art-thumb {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(16,26,51,.4);
+      cursor: pointer;
+      padding: 0;
+      transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+    .art-thumb:not(.art-thumb--empty):hover {
+      transform: scale(1.04);
+      border-color: rgba(255,255,255,.35);
+      box-shadow: 0 8px 24px rgba(0,0,0,.5);
+      z-index: 1;
+    }
+    .art-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: 0;
+      transition: filter .2s ease;
+      pointer-events: none;
+    }
+    .art-thumb:not(.art-thumb--empty):hover img {
+      filter: brightness(1.1);
+    }
+
+    /* Empty placeholder slots */
+    .art-thumb--empty {
+      cursor: default;
+      display: grid; place-items: center;
+      color: rgba(255,255,255,.18);
+      font-size: 1.4rem;
+      border-style: dashed;
+    }
+    .art-thumb--empty span { pointer-events: none; }
+
+    /* ═══════════════════════════
+       LIGHTBOX MODAL
+       ═══════════════════════════ */
+    /* ── Lightbox: subtle dim scrim, glass panel floats forward ── */
+    .art-lightbox {
+      position: fixed; inset: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+      /* Very light dim — the page still shows behind */
+      background: rgba(5, 10, 20, .38);
+      opacity: 0;
+      transition: opacity .28s ease;
+    }
+    .art-lightbox[hidden] { display: none; }
+    .art-lightbox.is-open { opacity: 1; }
+
+    /* The glass panel itself */
+    .art-lightbox__inner {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 0;
+      width: 100%;
+      max-width: 1060px;
+      max-height: 88vh;
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,.20);
+      background: rgba(16, 26, 51, .52);
+      backdrop-filter: blur(28px) saturate(150%) contrast(110%);
+      -webkit-backdrop-filter: blur(28px) saturate(150%) contrast(110%);
+      box-shadow:
+        0 32px 80px rgba(0,0,0,.55),
+        inset 0 0 0 1px rgba(255,255,255,.07);
+      overflow: hidden;
+      /* Pop forward on open */
+      transform: scale(.96) translateY(10px);
+      transition: transform .28s cubic-bezier(.34,1.56,.64,1);
+    }
+    .art-lightbox.is-open .art-lightbox__inner {
+      transform: scale(1) translateY(0);
+    }
+    @media (max-width: 800px) {
+      .art-lightbox__inner {
+        grid-template-columns: 1fr;
+        max-height: 88vh;
+        overflow-y: auto;
+      }
+    }
+
+    /* Close button — top-right corner of the panel */
+    .art-lightbox__close {
+      position: absolute; top: 14px; right: 14px;
+      width: 36px; height: 36px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.22);
+      background: rgba(255,255,255,.08);
+      color: #fff; cursor: pointer;
+      display: grid; place-items: center;
+      transition: background .15s ease, transform .15s ease;
+      z-index: 2;
+    }
+    .art-lightbox__close:hover { background: rgba(255,255,255,.18); transform: scale(1.1); }
+    .art-lightbox__close svg { width: 16px; height: 16px; }
+
+    /* Image side */
+    .art-lightbox__img-wrap {
+      display: flex; align-items: center; justify-content: center;
+      padding: 28px;
+      min-height: 300px;
+      background: rgba(0,0,0,.15);
+      border-right: 1px solid rgba(255,255,255,.08);
+    }
+    @media (max-width: 800px) {
+      .art-lightbox__img-wrap {
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+        padding: 20px;
+        min-height: 200px;
+      }
+    }
+    .art-lightbox__img-wrap img {
+      display: block;
+      max-width: 100%;
+      max-height: calc(88vh - 80px);
+      width: auto; height: auto;
+      border-radius: 12px;
+      object-fit: contain;
+      box-shadow: 0 12px 40px rgba(0,0,0,.4);
+    }
+
+    /* Info side */
+    .art-lightbox__info {
+      display: grid;
+      align-content: start;
+      gap: 14px;
+      padding: 32px 24px 28px;
+    }
+    .art-lightbox__title {
+      font-size: clamp(17px, 2vw, 26px);
+      margin: 0; color: var(--text-100);
+      padding-right: 28px; /* don't overlap close btn */
+      line-height: 1.25;
+    }
+    .art-lightbox__tags {
+      font-size: .88rem; color: var(--text-300); margin: 0;
+    }
+    .art-lightbox__desc {
+      font-size: .97rem; color: var(--text-200);
+      line-height: 1.7; margin: 0;
+    }
+
   </style>
 </head>
 <body>
-  <!-- Background -->
+
   <div class="bg-image" aria-hidden="true"></div>
-  <div class="bg-blur" aria-hidden="true"></div>
+  <div class="bg-blur"  aria-hidden="true"></div>
 
-  <a class="skip-link" id="skip" href="#main-content">Skip to content</a>
+  <a class="skip-link" href="#home">Skip to content</a>
 
-  <!-- Header -->
+  <!-- ═══════════════════════════════════════
+       STICKY HEADER — nav links are anchors
+       ═══════════════════════════════════════ -->
   <header class="site-header" role="banner">
     <div class="container">
-      <a class="brand" href="index.html" aria-label="Home">
+      <a class="brand" href="#home" aria-label="Back to top">
         <img class="brand-logo" src="LOGO.png" alt="Riku Yuki Darroch logo" height="56" />
       </a>
       <nav class="site-nav" aria-label="Primary">
@@ -202,95 +453,90 @@
           <span class="hamburger" aria-hidden="true"></span>
         </button>
         <ul id="primary-menu">
-          <li><a href="index.html" aria-current="page">Home</a></li>
-          <li><a href="artworks.html">Artworks</a></li>
-          <li><a href="game-design.html">Game Design</a></li>
-          <li><a href="graphic-design.html">Graphic Design</a></li>
-          <li><a href="about.html">About</a></li>
-          <li><a class="nav-link--cta" href="contact.html">Contact</a></li>
+          <li><a href="#home">Home</a></li>
+          <li><a href="#artworks">Artworks</a></li>
+          <li><a href="#game-design">Game Design</a></li>
+          <li><a href="#graphic-design">Graphic Design</a></li>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <!-- Masthead (big logo) -->
-  <section class="masthead-body snap" aria-label="Site masthead">
+  <!-- ═══════════════════════════════════════
+       MASTHEAD — big logo
+       ═══════════════════════════════════════ -->
+  <div class="masthead-body" id="masthead" aria-label="Site masthead">
     <div class="masthead-inner">
-      <div class="logo-distort">
-        <img class="logo-wide" src="LOGO.png" alt="Riku Yuki Darroch wordmark" />
+      <div class="logo-distort" id="logoHolder">
+        <img class="logo-wide" id="logoImg" src="LOGO.png" alt="Riku Yuki Darroch wordmark" />
         <canvas id="logoGL" aria-hidden="true"></canvas>
       </div>
-      <h2 class="masthead-tagline">Artist, Designer, Creative Jack of All Trades</h2>
+      <p class="masthead-tagline">Artist, Designer, Creative Jack of All Trades</p>
     </div>
-  </section>
+  </div>
 
-  <main id="main-content">
-    <!-- Selected Work (Wheel Carousel) -->
-    <section class="wheel-section snap" aria-labelledby="work-title">
+  <main>
+
+    <!-- ═══════════════════════════════════════
+         HOME — Selected Work carousel
+         ═══════════════════════════════════════ -->
+    <section id="home" class="wheel-section page-section" aria-labelledby="work-title">
       <div class="container">
         <h2 id="work-title">Selected Work</h2>
-        <p class="section-intro">
-          Use the arrows to browse. On laptops/trackpads, horizontal scroll also slides the carousel. Vertical scroll moves the page.
-        </p>
+        <p class="section-intro">Swipe or use the arrows to browse.</p>
 
         <div class="wheel-viewport" data-wheel>
-          <div class="wheel-arrows" aria-hidden="false">
-            <button class="wheel-arrow" type="button" data-prev aria-label="Previous projects">
+          <div class="wheel-arrows">
+            <button class="wheel-arrow" type="button" data-prev aria-label="Previous project">
               <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15.5 19.5a1 1 0 0 1-1.41 0l-6-6a1 1 0 0 1 0-1.41l6-6a1 1 0 1 1 1.41 1.41L10.33 12l5.17 5.5a1 1 0 0 1 0 1.41z"/></svg>
             </button>
-            <button class="wheel-arrow" type="button" data-next aria-label="Next projects">
+            <button class="wheel-arrow" type="button" data-next aria-label="Next project">
               <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.5 4.5a1 1 0 0 1 1.41 0l6 6a1 1 0 0 1 0 1.41l-6 6a1 1 0 1 1-1.41-1.41L13.67 12 8.5 6.91A1 1 0 0 1 8.5 4.5z"/></svg>
             </button>
           </div>
-
           <div class="wheel-track" data-track>
-            <!-- Item 1 -->
             <a class="wheel-item" href="project-template.html">
               <article class="wheel-card">
-                <figure><img src="almost done.png" alt="Red Moon Concept Art Preview" loading="lazy" /></figure>
+                <figure><img src="almost_done.png" alt="Red Moon Concept Art Preview" loading="lazy" /></figure>
                 <div class="project-meta">
-                  <h3 class="project-title">“Red Moon” World Concept Deck</h3>
+                  <h3 class="project-title">"Red Moon" World Concept Deck</h3>
                   <p class="project-tags">World Building · Concept Art · Character Design</p>
-                  <p class="project-blurb">Concept deck for a multi‑media paranormal eco‑narrative project.</p>
+                  <p class="project-blurb">Concept deck for a multi-media paranormal eco-narrative project.</p>
                   <span class="project-cta">View more →</span>
                 </div>
               </article>
             </a>
-
-            <!-- Item 2 -->
             <a class="wheel-item" href="case-studies/project-02.html">
               <article class="wheel-card">
                 <figure><img src="images/project-02-thumb.jpg" alt="Reflection prototype thumbnail" loading="lazy" /></figure>
                 <div class="project-meta">
-                  <h3 class="project-title">“Reflection” Horror Game Prototype</h3>
+                  <h3 class="project-title">"Reflection" Horror Game Prototype</h3>
                   <p class="project-tags">GDD · Pitch · UE5 Prototype</p>
                   <p class="project-blurb">Retro 3D horror for PC with design doc and concept art.</p>
                   <span class="project-cta">View more →</span>
                 </div>
               </article>
             </a>
-
-            <!-- Item 3 -->
             <a class="wheel-item" href="case-studies/project-03.html">
               <article class="wheel-card">
                 <figure><img src="album cover art.png" alt="Album design mock cover" loading="lazy" /></figure>
                 <div class="project-meta">
-                  <h3 class="project-title">“Disociating at the Function” Album Design</h3>
+                  <h3 class="project-title">"Dissociating at the Function" Album Design</h3>
                   <p class="project-tags">Graphic Design · Photography · Typography</p>
                   <p class="project-blurb">Mock album art and jewel case for a fictional rap album.</p>
                   <span class="project-cta">View more →</span>
                 </div>
               </article>
             </a>
-
-            <!-- Item 4 -->
             <a class="wheel-item" href="case-studies/project-04.html">
               <article class="wheel-card">
                 <figure><img src="3E7825E3-E6DF-45F9-88AA-05536A53BCD9-7484-000002D0C700F917.jpg" alt="Photography preview" loading="lazy" /></figure>
                 <div class="project-meta">
-                  <h3 class="project-title">“Home” Photography Collection</h3>
+                  <h3 class="project-title">"Home" Photography Collection</h3>
                   <p class="project-tags">Photography · Identity · Travel</p>
-                  <p class="project-blurb">A growing collection of photography of the places I’ve called home.</p>
+                  <p class="project-blurb">A growing collection of photography of the places I've called home.</p>
                   <span class="project-cta">View more →</span>
                 </div>
               </article>
@@ -298,443 +544,637 @@
           </div>
         </div>
 
+        <div class="wheel-dots" role="tablist" aria-label="Project selector" data-dots>
+          <button class="wheel-dot" type="button" data-dot="0" aria-label="Project 1" aria-current="true"></button>
+          <button class="wheel-dot" type="button" data-dot="1" aria-label="Project 2"></button>
+          <button class="wheel-dot" type="button" data-dot="2" aria-label="Project 3"></button>
+          <button class="wheel-dot" type="button" data-dot="3" aria-label="Project 4"></button>
+        </div>
       </div>
     </section>
+
+    <!-- ═══════════════════════════════════════
+         ARTWORKS — thumbnail grid + lightbox
+         ═══════════════════════════════════════ -->
+    <section id="artworks" class="work page-section" aria-labelledby="artworks-title">
+      <div class="container">
+        <h1 id="artworks-title">Artworks</h1>
+        <p class="section-intro">Concept art, illustrations, environment studies, and visual explorations. Click any thumbnail to view.</p>
+
+        <!-- 5-column thumbnail grid -->
+        <div class="art-grid" role="list">
+
+          <button class="art-thumb" role="listitem"
+            data-img="images/artworks/art-01-thumb.jpg"
+            data-full="images/artworks/art-01-thumb.jpg"
+            data-title="Environment Concept #01"
+            data-tags="Concept Art · Environment"
+            data-desc="Atmospheric landscape exploring mood and scale. A study in depth, colour temperature, and the relationship between light and fog in a natural setting."
+            aria-label="Open Environment Concept #01">
+            <img src="images/artworks/art-01-thumb.jpg" alt="Environment concept thumbnail." loading="lazy" />
+          </button>
+
+          <button class="art-thumb" role="listitem"
+            data-img="images/artworks/art-02-thumb.jpg"
+            data-full="images/artworks/art-02-thumb.jpg"
+            data-title="Character Study #01"
+            data-tags="Concept Art · Character"
+            data-desc="Exploring silhouettes and gesture for a rogue archetype. Multiple poses and costume variations to nail the visual read from a distance."
+            aria-label="Open Character Study #01">
+            <img src="images/artworks/art-02-thumb.jpg" alt="Character concept thumbnail." loading="lazy" />
+          </button>
+
+          <button class="art-thumb" role="listitem"
+            data-img="images/artworks/art-03-thumb.jpg"
+            data-full="images/artworks/art-03-thumb.jpg"
+            data-title="Vehicle Concept #01"
+            data-tags="Concept Design · Vehicle"
+            data-desc="Sketch to render: noir-inspired hover bike. Designed around a retro-futurist aesthetic with emphasis on surface material and light interaction."
+            aria-label="Open Vehicle Concept #01">
+            <img src="images/artworks/art-03-thumb.jpg" alt="Vehicle concept thumbnail." loading="lazy" />
+          </button>
+
+          <button class="art-thumb" role="listitem"
+            data-img="images/artworks/art-04-thumb.jpg"
+            data-full="images/artworks/art-04-thumb.jpg"
+            data-title="Environment Concept #02"
+            data-tags="Concept Art · Environment"
+            data-desc="Night city alley — neon lighting study. Exploring how artificial light sources interact with wet surfaces and urban grime."
+            aria-label="Open Environment Concept #02">
+            <img src="images/artworks/art-04-thumb.jpg" alt="Neon city alley study thumbnail." loading="lazy" />
+          </button>
+
+          <button class="art-thumb" role="listitem"
+            data-img="almost_done.png"
+            data-full="almost_done.png"
+            data-title="Red Moon — Key Visual"
+            data-tags="Concept Art · World Building"
+            data-desc="Key visual from the Red Moon world concept deck. Sets the tone and palette for the broader paranormal eco-narrative project."
+            aria-label="Open Red Moon Key Visual">
+            <img src="almost_done.png" alt="Red Moon key visual thumbnail." loading="lazy" />
+          </button>
+
+          <!-- Rows 2–5: placeholder slots — replace src/data-* with your real images -->
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         ARTWORK LIGHTBOX (shared modal)
+         ═══════════════════════════════════════ -->
+    <div id="art-lightbox" class="art-lightbox" role="dialog" aria-modal="true" aria-label="Artwork preview" hidden>
+      <button class="art-lightbox__close" id="lbClose" aria-label="Close preview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+      <div class="art-lightbox__inner">
+        <div class="art-lightbox__img-wrap">
+          <img id="lbImg" src="" alt="" />
+        </div>
+        <div class="art-lightbox__info">
+          <h2 id="lbTitle" class="art-lightbox__title"></h2>
+          <p  id="lbTags"  class="art-lightbox__tags"></p>
+          <p  id="lbDesc"  class="art-lightbox__desc"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         GAME DESIGN
+         ═══════════════════════════════════════ -->
+    <section id="game-design" class="work page-section" aria-labelledby="gd-title">
+      <div class="container">
+        <h1 id="gd-title">Game Design</h1>
+        <p class="section-intro">Systems, prototypes, narrative, UX for games. Selected design-led work.</p>
+        <div class="grid grid-portfolio">
+          <article class="card project tilt-card">
+            <a class="project-link" href="projects/game-design/gd-01.html">
+              <figure class="project-thumb"><img src="images/game-design/gd-01-thumb.jpg" alt="Narrative RPG prototype thumbnail." loading="lazy" /></figure>
+              <div class="project-meta">
+                <h3 class="project-title">Narrative RPG Prototype</h3>
+                <p class="project-tags">Systems · Narrative · Prototyping</p>
+                <p class="project-blurb">Player choice, dynamic encounters, reactive world design.</p>
+                <span class="project-cta">View project →</span>
+              </div>
+            </a>
+          </article>
+          <article class="card project tilt-card">
+            <a class="project-link" href="projects/game-design/gd-02.html">
+              <figure class="project-thumb"><img src="images/game-design/gd-02-thumb.jpg" alt="Combat system exploration thumbnail." loading="lazy" /></figure>
+              <div class="project-meta">
+                <h3 class="project-title">Combat System Exploration</h3>
+                <p class="project-tags">Systems · Tuning · UX</p>
+                <p class="project-blurb">Balancing depth and clarity through iterative tuning and flows.</p>
+                <span class="project-cta">View project →</span>
+              </div>
+            </a>
+          </article>
+          <article class="card project tilt-card">
+            <a class="project-link" href="projects/game-design/gd-03.html">
+              <figure class="project-thumb"><img src="images/game-design/gd-03-thumb.jpg" alt="Onboarding and tutorialization thumbnail." loading="lazy" /></figure>
+              <div class="project-meta">
+                <h3 class="project-title">Onboarding &amp; Tutorialization</h3>
+                <p class="project-tags">UX · IA · Writing</p>
+                <p class="project-blurb">Reducing friction in early funnels with progressive disclosure.</p>
+                <span class="project-cta">View project →</span>
+              </div>
+            </a>
+          </article>
+          <article class="card project tilt-card">
+            <a class="project-link" href="projects/game-design/gd-04.html">
+              <figure class="project-thumb"><img src="images/game-design/gd-04-thumb.jpg" alt="HUD/UI for action game thumbnail." loading="lazy" /></figure>
+              <div class="project-meta">
+                <h3 class="project-title">HUD/UI for Action Game</h3>
+                <p class="project-tags">UI/UX · Accessibility</p>
+                <p class="project-blurb">Readable, reactive HUD with modular components.</p>
+                <span class="project-cta">View project →</span>
+              </div>
+            </a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         GRAPHIC DESIGN
+         ═══════════════════════════════════════ -->
+    <section id="graphic-design" class="work page-section" aria-labelledby="gdx-title">
+      <div class="container">
+        <h1 id="gdx-title">Graphic Design</h1>
+        <p class="section-intro">Brand identity, posters, UI visuals, and campaign design.</p>
+        <div class="grid grid-portfolio">
+          <article class="card project tilt-card">
+            <a class="project-link" href="projects/graphic-design/gd-01.html">
+              <figure class="project-thumb"><img src="images/graphic-design/gd-01-thumb.jpg" alt="Branding project thumbnail." loading="lazy" /></figure>
+              <div class="project-meta">
+                <h3 class="project-title">Indie Game Branding</h3>
+                <p class="project-tags">Identity · Logo · Guidelines</p>
+                <p class="project-blurb">Visual identity and logo system for an indie title.</p>
+                <span class="project-cta">View project →</span>
+              </div>
+            </a>
+          </article>
+          <article class="card project tilt-card">
+            <a class="project-link" href="projects/graphic-design/gd-02.html">
+              <figure class="project-thumb"><img src="images/graphic-design/gd-02-thumb.jpg" alt="Poster series thumbnail." loading="lazy" /></figure>
+              <div class="project-meta">
+                <h3 class="project-title">Poster Series</h3>
+                <p class="project-tags">Print · Typography</p>
+                <p class="project-blurb">A set of high-contrast posters with retro-noir accents.</p>
+                <span class="project-cta">View project →</span>
+              </div>
+            </a>
+          </article>
+          <article class="card project tilt-card">
+            <a class="project-link" href="projects/graphic-design/gd-03.html">
+              <figure class="project-thumb"><img src="images/graphic-design/gd-03-thumb.jpg" alt="UI visual direction thumbnail." loading="lazy" /></figure>
+              <div class="project-meta">
+                <h3 class="project-title">UI Visual Direction</h3>
+                <p class="project-tags">UI · Visual Design</p>
+                <p class="project-blurb">Establishing color, type, and components for a game UI.</p>
+                <span class="project-cta">View project →</span>
+              </div>
+            </a>
+          </article>
+          <article class="card project tilt-card">
+            <a class="project-link" href="projects/graphic-design/gd-04.html">
+              <figure class="project-thumb"><img src="images/graphic-design/gd-04-thumb.jpg" alt="Key art / title screen thumbnail." loading="lazy" /></figure>
+              <div class="project-meta">
+                <h3 class="project-title">Key Art / Title Screen</h3>
+                <p class="project-tags">Campaign · Key Art</p>
+                <p class="project-blurb">Title screen and key visuals for launch beats.</p>
+                <span class="project-cta">View project →</span>
+              </div>
+            </a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         ABOUT
+         ═══════════════════════════════════════ -->
+    <section id="about" class="about page-section" aria-labelledby="about-title">
+      <div class="container">
+        <div class="about-grid">
+          <figure class="about-photo">
+            <img src="PORTRAIT.jpg" alt="Portrait of Riku Darroch." loading="lazy" />
+          </figure>
+          <div class="about-content">
+            <h1 id="about-title">Who Is Riku Yuki Darroch?</h1>
+            <p>
+              My name is Riku Yuki Darroch. I studied at Victoria University of Wellington
+              and my degree is in Design Innovation majoring in Communication Design and Game Design.
+              <br>
+              I grew up in Te Anau, a small town in Southland New Zealand, and with my
+              Japanese Mother I have been back and forth between there and visiting
+              family in Ebetsu, Hokkaido, Japan. Although I struggled with my identity as a child, I now embrace it as a unique perspective on the world and use it as inspiration in my creative work.
+              <br>
+              I consider my curiosity to be one of my biggest strengths. I particularly
+              love finding inspirations from unlikely places; of course from projects by
+              people in my field, but also from music, politics, history and sciences. I
+              particularly resonate with themes of class inequality, environmentalism,
+              cultural cross-pollination, and social commentary.
+              <br>
+              My creative practice is primarily in art, concept design and game design, however I also have experience with graphic design, video production, photography, writing, animation, and audio production.
+            </p>
+            <p>
+              The reason why I made this career decision is because I believe in the
+              power of expressing ideas through creative fields and its ability to inhibit
+              change. Art as a career is often seen as a non essential job, finding itself
+              first at the chopping block whenever convenient by those in power. But the
+              ability to express ideas through art is something that not many other forms
+              of communication can replicate quite as effectively. I am sure you have
+              watched a movie that taught you about yourself or changed the way that
+              you view the world. Perhaps not quantifiably, but the way that creative
+              projects teach about abstract concepts is so valuable and I want to harness
+              that. There is a magic you feel when you listen to a beautiful song or
+              see a beautiful painting that no amount of scientific analysis is capable
+              of describing. It's that mysterious power that art holds that is meaningful.
+              No matter when or where, innately humanity fights to create, whether
+              under an oppressive regime or on the cave man walls. Maybe to call out
+              to the cosmos to prove that we were real once, or to be remembered in
+              the future, perhaps there is something divine about creating that keeps us
+              picking up our tools.
+              <br><br>
+              "A Earth without art is just a rock" — Kendrick Lamar
+            </p>
+            <ul class="about-list">
+              <li><strong>Strengths:</strong> Visual Design, Collaborative Working, Creative Ideation</li>
+              <li><strong>Softwares:</strong> Clip Studio Paint, Photoshop, Affinity, InDesign, DaVinci Resolve, Premiere Pro, FL Studio, Blender, Unreal Engine 5</li>
+              <li><strong>Values:</strong> Environment, Identity, Work Ethic, Narrative</li>
+            </ul>
+            <div class="about-cta">
+              <a class="button" href="#contact">Let's collaborate</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════
+         CONTACT
+         ═══════════════════════════════════════ -->
+    <section id="contact" class="contact page-section" aria-labelledby="contact-title">
+      <div class="container">
+        <div class="contact-header">
+          <h1 id="contact-title">Contact</h1>
+          <p class="section-intro">
+            For professional enquiries, commissions, and collaborations, please reach out via the channels below.
+          </p>
+        </div>
+        <div class="contact-actions" aria-label="Contact methods">
+          <a class="btn-solid" href="mailto:rikuyuki50@gmail.com" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4z" fill="none"/><path d="M4 4l8 6 8-6" stroke-width="2" fill="none"/><rect x="4" y="4" width="16" height="16" rx="2" stroke-width="2" fill="none"/></svg>
+            <span>Email</span>
+          </a>
+          <a class="btn-solid btn-secondary" href="https://www.linkedin.com/in/ionikinesis" target="_blank" rel="me external noopener noreferrer" aria-label="View LinkedIn profile">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4z" fill="none"/><path d="M6.5 9h2.5v9H6.5zM7.75 6A1.25 1.25 0 1 1 7.75 3.5 1.25 1.25 0 0 1 7.75 6zM11 9h2.3v1.3h.1c.3-.6 1-1.3 2.3-1.3 2.5 0 3 1.6 3 3.7V18H16v-4.1c0-1-.1-2.2-1.4-2.2-1.4 0-1.6 1.1-1.6 2.1V18h-2.5z"/></svg>
+            <span>LinkedIn</span>
+          </a>
+          <a class="btn-solid btn-secondary" href="https://www.artstation.com/reekouu" target="_blank" rel="me external noopener noreferrer" aria-label="View ArtStation portfolio">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.2 16.5l5.1-8.8c.3-.5.8-.8 1.3-.8h4a1.6 1.6 0 0 1 1.4.8l5 8.7c.5.9-.1 2-.9 2H12l-2.3-4h3.5l1.6 2.7h4.8L14.3 7.9c-.1-.2-.3-.3-.5-.3H9.6c-.2 0-.4.1-.5.3l-5 8.6h3.2l-1.1 1.9H4.1c-.8 0-1.4-1.1-.9-1.9z"/></svg>
+            <span>ArtStation</span>
+          </a>
+          <a class="btn-solid btn-secondary" href="https://www.instagram.com/riku.yuki.darroch" target="_blank" rel="me external noopener noreferrer" aria-label="View personal Instagram">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3.5" stroke-width="2" fill="none"/><circle cx="17" cy="7" r="1.2"/></svg>
+            <span>Personal Instagram</span>
+          </a>
+          <a class="btn-solid btn-secondary" href="https://www.instagram.com/Reekouu" target="_blank" rel="me external noopener noreferrer" aria-label="View art Instagram">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3.5" stroke-width="2" fill="none"/><circle cx="17" cy="7" r="1.2"/></svg>
+            <span>Art Instagram</span>
+          </a>
+          <a class="btn-solid btn-secondary" href="https://www.youtube.com/ioniguess" target="_blank" rel="me external noopener noreferrer" aria-label="View YouTube channel">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="7" width="16" height="10" rx="2.5" stroke-width="2" fill="none"/><polygon points="10,9 16,12 10,15"/></svg>
+            <span>YouTube</span>
+          </a>
+          <a class="btn-solid btn-secondary" href="https://twitter.com/reekouu" target="_blank" rel="me external noopener noreferrer" aria-label="View Twitter/X profile">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4z" fill="none"/><path d="M6 18l5-6.1L7 6h2.6l3 4.9L16.9 6H20l-5.1 6.3L18 18h-2.6l-3.2-5.2L8 18H6z"/></svg>
+            <span>Twitter / X</span>
+          </a>
+        </div>
+        <p class="contact-note">If you prefer another channel, feel free to suggest it and I will accommodate where possible.</p>
+      </div>
+    </section>
+
   </main>
 
-  <footer class="site-footer snap">
-    <div class="container footer-grid">
-      <small>© <span id="year"></span> Riku Darroch</small>
-      <nav aria-label="Footer">
-        <ul class="footer-links">
-          <li><a href="index.html" aria-current="page">Home</a></li>
-          <li><a href="artworks.html">Artworks</a></li>
-          <li><a href="game-design.html">Game Design</a></li>
-          <li><a href="graphic-design.html">Graphic Design</a></li>
-          <li><a href="about.html">About</a></li>
-          <li><a class="nav-link--cta" href="contact.html">Contact</a></li>
-        </ul>
-      </nav>
-    </div>
-  </footer>
-
+  <!-- ═══════════════════════════════════════════════════════
+       SCRIPTS
+       ═══════════════════════════════════════════════════════ -->
   <script>
-    // Year
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    // Mobile nav toggle
+    /* ── Nav toggle (mobile) ── */
     (function(){
       const toggle = document.querySelector('.nav-toggle');
       const menu   = document.getElementById('primary-menu');
       if (!toggle || !menu) return;
       toggle.addEventListener('click', () => {
-        const expanded = toggle.getAttribute('aria-expanded') === 'true';
-        toggle.setAttribute('aria-expanded', String(!expanded));
-        menu.classList.toggle('open', !expanded);
+        const exp = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!exp));
+        menu.classList.toggle('open', !exp);
+      });
+      /* Close menu when an anchor link is clicked */
+      menu.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => {
+          toggle.setAttribute('aria-expanded', 'false');
+          menu.classList.remove('open');
+        });
       });
     })();
 
-    // Collapse masthead when scrolling a bit
+    /* ── Highlight active nav link on scroll ── */
     (function(){
-      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const THRESHOLD = 40; // px
+      const sections = Array.from(document.querySelectorAll('.page-section[id], #home'));
+      const links    = Array.from(document.querySelectorAll('.site-nav a[href^="#"]'));
+      const header   = document.querySelector('.site-header');
+
       function update(){
-        if (window.scrollY > THRESHOLD) document.body.classList.add('is-scrolled');
-        else document.body.classList.remove('is-scrolled');
+        const headerH = header ? header.getBoundingClientRect().bottom : 80;
+        let current = sections[0]?.id ?? '';
+        sections.forEach(s => {
+          if (s.getBoundingClientRect().top <= headerH + 20) current = s.id;
+        });
+        links.forEach(a => {
+          const match = a.getAttribute('href') === '#' + current;
+          a.toggleAttribute('aria-current', match);
+          if (match) a.setAttribute('aria-current','page');
+          else a.removeAttribute('aria-current');
+        });
       }
-      window.addEventListener('scroll', () => { if (!prefersReduced) update(); }, { passive: true });
-      window.addEventListener('load', update);
+      window.addEventListener('scroll', update, { passive:true });
+      update();
     })();
 
-    /* =========================================================
-       WebGL Logo Distortion + Chromatic Aberration
-       - transparent canvas, momentum (SPRING_K=30, DAMPING=5)
-       ========================================================= */
+    /* ── Masthead collapse ──
+       Cache the trigger point BEFORE any CSS collapse changes the
+       masthead's dimensions. Compare only window.scrollY so it
+       works reliably in both directions (scroll down AND back up). ── */
     (function(){
-      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (prefersReduced) return;
-      const holder = document.querySelector('.logo-distort');
-      const img = holder?.querySelector('.logo-wide');
-      const canvas = holder?.querySelector('#logoGL');
+      const masthead = document.getElementById('masthead');
+      const header   = document.querySelector('.site-header');
+      if (!masthead || !header) return;
+
+      // Measure once the page has painted so layout is stable
+      let triggerY = 0;
+      function measure(){
+        // Temporarily remove is-scrolled so masthead is at full height
+        const wasScrolled = document.body.classList.contains('is-scrolled');
+        document.body.classList.remove('is-scrolled');
+        // Bottom of masthead in document coords, minus header height
+        triggerY = masthead.getBoundingClientRect().bottom
+                   + window.scrollY
+                   - header.getBoundingClientRect().height;
+        if (wasScrolled) document.body.classList.add('is-scrolled');
+      }
+
+      function update(){
+        document.body.classList.toggle('is-scrolled', window.scrollY >= triggerY);
+      }
+
+      // Measure after fonts/images have loaded so heights are final
+      window.addEventListener('load', () => { measure(); update(); });
+      window.addEventListener('resize', () => { measure(); update(); }, { passive:true });
+      window.addEventListener('scroll', update, { passive:true });
+
+      // Also run immediately in case load already fired
+      measure();
+      update();
+    })();
+
+    /* ═══════════════════════════════════════════════════════
+       WebGL LOGO DISTORTION — mouse + touch
+       ═══════════════════════════════════════════════════════ */
+    (function(){
+      if (window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+      const holder = document.getElementById('logoHolder');
+      const img    = document.getElementById('logoImg');
+      const canvas = document.getElementById('logoGL');
       if (!holder || !img || !canvas) return;
 
-      const gl = canvas.getContext('webgl', { alpha: true, antialias: true, premultipliedAlpha: false }) ||
-                 canvas.getContext('experimental-webgl');
+      const gl = canvas.getContext('webgl',{alpha:true,antialias:true,premultipliedAlpha:false})
+              || canvas.getContext('experimental-webgl');
       if (!gl) return;
-      gl.enable(gl.BLEND);
-      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-      gl.clearColor(0,0,0,0);
+      gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA); gl.clearColor(0,0,0,0);
       holder.classList.add('gl-active');
 
-      const VS = `
-        attribute vec2 a_pos;
-        attribute vec2 a_uv;
-        varying vec2 v_uv;
-        void main(){ v_uv = a_uv; gl_Position = vec4(a_pos, 0.0, 1.0); }
-      `;
-      const FS = `
-        precision mediump float;
-        varying vec2 v_uv;
-        uniform sampler2D u_tex;
-        uniform vec2  u_res;
-        uniform vec2  u_mouse;
-        uniform float u_time, u_strength, u_radius, u_ca, u_mix;
+      const VS=`attribute vec2 a_pos,a_uv;varying vec2 v_uv;void main(){v_uv=a_uv;gl_Position=vec4(a_pos,0,1);}`;
+      const FS=`precision mediump float;varying vec2 v_uv;uniform sampler2D u_tex;uniform vec2 u_mouse;uniform float u_time,u_str,u_rad,u_ca,u_mix;
+        float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5);}
+        float n(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),u.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),u.x),u.y);}
+        void main(){vec2 d=v_uv-u_mouse;float f=smoothstep(u_rad,0.,length(d));vec2 dir=normalize(d+1e-6);float k=clamp(u_mix,0.,1.),w=n(v_uv*6.+vec2(u_time*.35,u_time*.55))*2.-1.;
+        vec2 dp=dir*f*(u_str*(0.6+0.4*w))*k,caR=dp*(u_ca*k),caB=-dp*(u_ca*k),base=v_uv+dp;
+        vec4 r=texture2D(u_tex,clamp(base+caR,0.,1.)),g=texture2D(u_tex,clamp(base,0.,1.)),b=texture2D(u_tex,clamp(base+caB,0.,1.));
+        gl_FragColor=vec4(r.r,g.g,b.b,max(max(r.a,g.a),b.a));}`;
 
-        float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453123); }
-        float noise(vec2 p){
-          vec2 i = floor(p), f = fract(p);
-          float a = hash(i), b = hash(i+vec2(1.,0.)), c = hash(i+vec2(0.,1.)), d = hash(i+vec2(1.,1.));
-          vec2 u = f*f*(3.-2.*f);
-          return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);
-        }
-        void main(){
-          vec2 uv = v_uv, m = u_mouse, d = uv - m;
-          float r = length(d), f = smoothstep(u_radius, 0.0, r);
-          float wob = noise(uv*6.0 + vec2(u_time*0.35, u_time*0.55))*2.0 - 1.0;
-          vec2 dir = normalize(d + 1e-6);
-          float k = clamp(u_mix, 0.0, 1.0);
-          vec2 disp = dir * f * (u_strength * (0.6 + 0.4*wob)) * k;
+      function sh(t,s){const x=gl.createShader(t);gl.shaderSource(x,s);gl.compileShader(x);return gl.getShaderParameter(x,gl.COMPILE_STATUS)?x:null;}
+      const p=(()=>{const x=gl.createProgram(),v=sh(gl.VERTEX_SHADER,VS),f=sh(gl.FRAGMENT_SHADER,FS);if(!v||!f)return null;gl.attachShader(x,v);gl.attachShader(x,f);gl.linkProgram(x);return gl.getProgramParameter(x,gl.LINK_STATUS)?x:null;})();
+      if(!p)return;
 
-          vec2 caR =  disp * (u_ca*k);
-          vec2 caB = -disp * (u_ca*k);
-          vec2 base = uv + disp;
+      const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+      gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,0,0,1,-1,1,0,-1,1,0,1,1,1,1,1]),gl.STATIC_DRAW);
+      const ap=gl.getAttribLocation(p,'a_pos');gl.vertexAttribPointer(ap,2,gl.FLOAT,false,16,0);gl.enableVertexAttribArray(ap);
+      const au=gl.getAttribLocation(p,'a_uv'); gl.vertexAttribPointer(au,2,gl.FLOAT,false,16,8);gl.enableVertexAttribArray(au);
+      const U=n=>gl.getUniformLocation(p,n);
+      const uT=U('u_tex'),uM=U('u_mouse'),uTi=U('u_time'),uS=U('u_str'),uR=U('u_rad'),uC=U('u_ca'),uMx=U('u_mix');
 
-          vec4 rS = texture2D(u_tex, clamp(base + caR, 0.0, 1.0));
-          vec4 gS = texture2D(u_tex, clamp(base,       0.0, 1.0));
-          vec4 bS = texture2D(u_tex, clamp(base + caB, 0.0, 1.0));
-          vec3 col = vec3(rS.r, gS.g, bS.b);
-          float a  = max(max(rS.a, gS.a), bS.a);
-          gl_FragColor = vec4(col, a);
-        }
-      `;
-      function compile(type, src){
-        const sh = gl.createShader(type); gl.shaderSource(sh, src); gl.compileShader(sh);
-        if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) { console.warn(gl.getShaderInfoLog(sh)); gl.deleteShader(sh); return null; }
-        return sh;
-      }
-      function program(vs, fs){
-        const p = gl.createProgram(); gl.attachShader(p, vs); gl.attachShader(p, fs); gl.linkProgram(p);
-        if (!gl.getProgramParameter(p, gl.LINK_STATUS)) { console.warn(gl.getProgramInfoLog(p)); gl.deleteProgram(p); return null; }
-        return p;
-      }
-      const vs = compile(gl.VERTEX_SHADER, VS);
-      const fs = compile(gl.FRAGMENT_SHADER, FS);
-      const prog = program(vs, fs);
-      if (!prog) return;
+      const tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);
+      [gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER].forEach(f=>gl.texParameteri(gl.TEXTURE_2D,f,gl.LINEAR));
+      [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(f=>gl.texParameteri(gl.TEXTURE_2D,f,gl.CLAMP_TO_EDGE));
 
-      const buf = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-        -1,-1,0,0,  1,-1,1,0,  -1,1,0,1,  1,1,1,1
-      ]), gl.STATIC_DRAW);
-
-      const a_pos = gl.getAttribLocation(prog, 'a_pos');
-      const a_uv  = gl.getAttribLocation(prog, 'a_uv');
-      const STRIDE = 4 * Float32Array.BYTES_PER_ELEMENT;
-      gl.vertexAttribPointer(a_pos, 2, gl.FLOAT, false, STRIDE, 0); gl.enableVertexAttribArray(a_pos);
-      gl.vertexAttribPointer(a_uv,  2, gl.FLOAT, false, STRIDE, 2*4); gl.enableVertexAttribArray(a_uv);
-
-      const u_tex      = gl.getUniformLocation(prog, 'u_tex');
-      const u_res      = gl.getUniformLocation(prog, 'u_res');
-      const u_mouse    = gl.getUniformLocation(prog, 'u_mouse');
-      const u_time     = gl.getUniformLocation(prog, 'u_time');
-      const u_strength = gl.getUniformLocation(prog, 'u_strength');
-      const u_radius   = gl.getUniformLocation(prog, 'u_radius');
-      const u_ca       = gl.getUniformLocation(prog, 'u_ca');
-      const u_mix      = gl.getUniformLocation(prog, 'u_mix');
-
-      const tex = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, tex);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-      const logo = new Image(); logo.crossOrigin = 'anonymous';
-      logo.onload = () => { gl.bindTexture(gl.TEXTURE_2D, tex); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, logo);
-        resize(); requestAnimationFrame(tick);
-      };
-      logo.src = img.getAttribute('src');
+      const li=new Image();li.crossOrigin='anonymous';
+      li.onload=()=>{gl.bindTexture(gl.TEXTURE_2D,tex);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,li);resize();requestAnimationFrame(tick);};
+      li.src=img.src;
 
       function resize(){
-        const r = img.getBoundingClientRect();
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const w = Math.max(2, Math.round(r.width  * dpr));
-        const h = Math.max(2, Math.round(r.height * dpr));
-        canvas.style.width  = Math.round(r.width) + 'px';
-        canvas.style.height = Math.round(r.height) + 'px';
-        if (canvas.width !== w || canvas.height !== h){ canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); }
+        const r=img.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);
+        const w=Math.max(2,Math.round(r.width*dpr)),h=Math.max(2,Math.round(r.height*dpr));
+        canvas.style.width=Math.round(r.width)+'px';canvas.style.height=Math.round(r.height)+'px';
+        if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;gl.viewport(0,0,w,h);}
       }
-      window.addEventListener('resize', resize);
-      new ResizeObserver(resize).observe(holder);
+      window.addEventListener('resize',resize);new ResizeObserver(resize).observe(holder);
 
-      // momentum + fade
-      let tPrev = performance.now();
-      let mouse = { x: 0.5, y: 0.5 };
-      let eff   = { x: 0.5, y: 0.5 };
-      let vel   = { x: 0.0, y: 0.0 };
-      const SPRING_K = 30, DAMPING = 5, EASE_PER_SEC = 5;
-      let mixAmt = 0.0, targetMix = 0.0;
+      let tP=performance.now(),mouse={x:.5,y:.5},eff={x:.5,y:.5},vel={x:0,y:0},mix=0,tMix=0,paused=false,fadeTimer=null;
 
-      holder.addEventListener('mousemove', (e) => {
-        const r = canvas.getBoundingClientRect();
-        mouse.x = (e.clientX - r.left) / r.width;
-        mouse.y = 1.0 - ((e.clientY - r.top) / r.height);
-      });
-      holder.addEventListener('mouseenter', () => { targetMix = 1.0; });
-      holder.addEventListener('mouseleave', () => { targetMix = 0.0; });
+      function setMouse(cx,cy){const r=canvas.getBoundingClientRect();mouse.x=(cx-r.left)/r.width;mouse.y=1-((cy-r.top)/r.height);}
+      holder.addEventListener('mousemove', e=>{setMouse(e.clientX,e.clientY);});
+      holder.addEventListener('mouseenter',()=>{tMix=1;});
+      holder.addEventListener('mouseleave',()=>{tMix=0;});
+      holder.addEventListener('touchstart', e=>{if(fadeTimer){clearTimeout(fadeTimer);fadeTimer=null;}tMix=1;const t=e.touches[0];setMouse(t.clientX,t.clientY);},{passive:true});
+      holder.addEventListener('touchmove',  e=>{const t=e.touches[0];setMouse(t.clientX,t.clientY);},{passive:true});
+      holder.addEventListener('touchend',   ()=>{fadeTimer=setTimeout(()=>{tMix=0;fadeTimer=null;},1200);});
 
-      let paused = false;
-      new MutationObserver(() => {
-        paused = document.body.classList.contains('is-scrolled');
-        holder.classList.toggle('gl-active', !paused);
-        if (paused) { targetMix = 0.0; vel.x = vel.y = 0.0; } else { resize(); }
-      }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+      new MutationObserver(()=>{
+        paused=document.body.classList.contains('is-scrolled');
+        holder.classList.toggle('gl-active',!paused);
+        if(paused){tMix=0;vel.x=vel.y=0;}else resize();
+      }).observe(document.body,{attributes:true,attributeFilter:['class']});
 
       function tick(now){
         gl.clear(gl.COLOR_BUFFER_BIT);
-        const dt = Math.min(0.05, (now - tPrev) * 0.001); tPrev = now;
-
-        mixAmt += (targetMix - mixAmt) * Math.min(1, dt * EASE_PER_SEC);
-
-        const fx = SPRING_K * (mouse.x - eff.x) - DAMPING * vel.x;
-        const fy = SPRING_K * (mouse.y - eff.y) - DAMPING * vel.y;
-        vel.x += fx * dt; vel.y += fy * dt;
-        eff.x += vel.x * dt; eff.y += vel.y * dt;
-
-        if (!paused){
-          gl.useProgram(prog);
-          gl.uniform1i(u_tex, 0); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, tex);
-          gl.uniform2f(u_res, canvas.width, canvas.height);
-          gl.uniform2f(u_mouse, eff.x, eff.y);
-          gl.uniform1f(u_time, now * 0.001);
-          gl.uniform1f(u_strength, 0.02);
-          gl.uniform1f(u_radius,   0.9);
-          gl.uniform1f(u_ca,       0.9);
-          gl.uniform1f(u_mix,      mixAmt);
-          gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        const dt=Math.min(0.05,(now-tP)*0.001);tP=now;
+        mix+=(tMix-mix)*Math.min(1,dt*5);
+        const fx=30*(mouse.x-eff.x)-5*vel.x,fy=30*(mouse.y-eff.y)-5*vel.y;
+        vel.x+=fx*dt;vel.y+=fy*dt;eff.x+=vel.x*dt;eff.y+=vel.y*dt;
+        if(!paused){
+          gl.useProgram(p);gl.uniform1i(uT,0);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,tex);
+          gl.uniform2f(uM,eff.x,eff.y);gl.uniform1f(uTi,now*.001);
+          gl.uniform1f(uS,.02);gl.uniform1f(uR,.9);gl.uniform1f(uC,.9);gl.uniform1f(uMx,mix);
+          gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
         }
         requestAnimationFrame(tick);
       }
     })();
 
-    /* =========================================================
-       Wheel Carousel — 4 items, stable looping
-       + Delegated Tilt-on-hover for .wheel-card
-       ========================================================= */
+    /* ═══════════════════════════════════════════════════════
+       CAROUSEL — flat slide, arrows + swipe + dots
+       ═══════════════════════════════════════════════════════ */
     (function(){
-      const root  = document.querySelector('[data-wheel]');
-      const track = root?.querySelector('[data-track]');
-      const items = Array.from(track?.querySelectorAll('.wheel-item') || []);
-      const prevBtn = root?.querySelector('[data-prev]');
-      const nextBtn = root?.querySelector('[data-next]');
-      if (!root || !track || items.length !== 4) { /* keep exactly 4 items for perfect 90° spacing */ }
+      const viewport = document.querySelector('[data-wheel]');
+      const track    = viewport?.querySelector('[data-track]');
+      const slides   = Array.from(track?.querySelectorAll('.wheel-item')||[]);
+      const prevBtn  = viewport?.querySelector('[data-prev]');
+      const nextBtn  = viewport?.querySelector('[data-next]');
+      const dotEls   = Array.from(document.querySelectorAll('[data-dots] [data-dot]'));
+      if(!viewport||!track||!slides.length) return;
+      const N=slides.length; let cur=0;
 
-      // ---- CONFIG (exactly 4 items → 90° spacing) ----
-      const N = items.length || 4;
-      const STEP_DEG = 360 / N;                 // 4 → 90°
-      const RADIUS_Z = 1500;                    // ring depth
-      const FADE_START = 24 * Math.PI/180;
-      const FADE_END   = 60 * Math.PI/180;
+      function goTo(idx){
+        cur=((idx%N)+N)%N;
+        track.style.transform=`translateX(${-cur*100}%)`;
+        dotEls.forEach((d,i)=>d.setAttribute('aria-current',i===cur?'true':'false'));
+      }
+      prevBtn?.addEventListener('click',()=>goTo(cur-1));
+      nextBtn?.addEventListener('click',()=>goTo(cur+1));
+      dotEls.forEach(d=>d.addEventListener('click',()=>goTo(parseInt(d.dataset.dot,10))));
+      viewport.setAttribute('tabindex','0');
+      viewport.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'){e.preventDefault();goTo(cur-1);}if(e.key==='ArrowRight'){e.preventDefault();goTo(cur+1);}});
 
-      // ---- STATE ----
-      let angle = 0;        // radians
-      let target = 0;       // radians
-      let lastT = performance.now();
-      const TWO_PI = Math.PI * 2;
+      let sX=0,sY=0,drag=false,axis=null,off=0;
+      function onStart(x,y){sX=x;sY=y;drag=true;axis=null;off=0;track.classList.add('is-dragging');}
+      function onMove(x,y){
+        if(!drag)return;const dx=x-sX,dy=y-sY;
+        if(!axis){if(Math.abs(dx)>6||Math.abs(dy)>6)axis=Math.abs(dx)>=Math.abs(dy)?'x':'y';else return;}
+        if(axis!=='x')return;off=dx;track.style.transform=`translateX(calc(${-cur*100}% + ${dx}px))`;
+      }
+      function onEnd(){
+        if(!drag)return;drag=false;axis=null;track.classList.remove('is-dragging');
+        const th=viewport.clientWidth*.2;
+        if(off<-th)goTo(cur+1);else if(off>th)goTo(cur-1);else goTo(cur);
+      }
+      viewport.addEventListener('mousedown', e=>{e.preventDefault();onStart(e.clientX,e.clientY);});
+      window.addEventListener ('mousemove',  e=>onMove(e.clientX,e.clientY));
+      window.addEventListener ('mouseup',    ()=>onEnd());
+      viewport.addEventListener('touchstart',e=>onStart(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
+      viewport.addEventListener('touchmove', e=>{onMove(e.touches[0].clientX,e.touches[0].clientY);if(axis==='x')e.preventDefault();},{passive:false});
+      viewport.addEventListener('touchend',  ()=>onEnd());
+      viewport.addEventListener('click',e=>{if(Math.abs(off)>8)e.preventDefault();},{capture:true});
 
-      const rad = (a)=> a * Math.PI/180;
-      const deg = (a)=> a * 180/Math.PI;
-      const clamp01 = (v)=> Math.max(0, Math.min(1, v));
+      /* Tilt — desktop with hover only */
+      if(!window.matchMedia('(prefers-reduced-motion:reduce)').matches && !window.matchMedia('(hover:none)').matches){
+        const MAX=7;let active=null;
+        const find=el=>el?.closest?.('.wheel-card')??null;
+        const tilt=(c,e)=>{const r=c.getBoundingClientRect();if(!r.width)return;c.style.setProperty('--tiltY',(((e.clientX-r.left)/r.width-.5)*MAX).toFixed(2)+'deg');c.style.setProperty('--tiltX',(((e.clientY-r.top)/r.height-.5)*-MAX).toFixed(2)+'deg');};
+        const reset=c=>{c?.style.setProperty('--tiltX','0deg');c?.style.setProperty('--tiltY','0deg');};
+        track.addEventListener('pointerenter',e=>{const c=find(e.target);if(c){active=c;tilt(c,e);}},true);
+        track.addEventListener('pointermove', e=>{const c=find(e.target);if(!c)return;if(active&&c!==active)reset(active);active=c;tilt(c,e);});
+        track.addEventListener('pointerleave',()=>{reset(active);active=null;},true);
+      }
+      goTo(0);
+    })();
 
-      // Keep 'to' near 'from' by wrapping around 2π (stability)
-      function wrapNear(to, from){
-        let d = to - from;
-        d = ((d + Math.PI) % (TWO_PI)) - Math.PI;
-        return from + d;
+    /* ═══════════════════════════════════════════════════════
+       TILT CARDS — for portfolio grids (artworks, game, graphic)
+       ═══════════════════════════════════════════════════════ */
+    (function(){
+      if(window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+      if(window.matchMedia('(hover:none)').matches) return;
+      const MAX=6;
+      document.querySelectorAll('.card.project.tilt-card').forEach(el=>{
+        el.addEventListener('mouseenter',()=>el.classList.add('is-hovering'));
+        el.addEventListener('mousemove',e=>{
+          if(!el.classList.contains('is-hovering'))return;
+          const r=el.getBoundingClientRect();
+          el.style.setProperty('--ry',(((e.clientX-r.left)/r.width-.5)*MAX*2).toFixed(2)+'deg');
+          el.style.setProperty('--rx',(((e.clientY-r.top)/r.height-.5)*-MAX*2).toFixed(2)+'deg');
+        });
+        el.addEventListener('mouseleave',()=>{
+          el.style.setProperty('--ry','0deg');el.style.setProperty('--rx','0deg');
+          el.classList.remove('is-hovering');
+        });
+        el.addEventListener('mousedown',()=>el.setAttribute('data-press','true'));
+        window.addEventListener('mouseup',()=>el.removeAttribute('data-press'));
+      });
+    })();
+
+    /* ═══════════════════════════════════════════════════════
+       ARTWORK LIGHTBOX
+       ═══════════════════════════════════════════════════════ */
+    (function(){
+      const lb      = document.getElementById('art-lightbox');
+      const lbImg   = document.getElementById('lbImg');
+      const lbTitle = document.getElementById('lbTitle');
+      const lbTags  = document.getElementById('lbTags');
+      const lbDesc  = document.getElementById('lbDesc');
+      const lbClose = document.getElementById('lbClose');
+      if (!lb) return;
+
+      function open(btn) {
+        lbImg.src        = btn.dataset.full || btn.dataset.img;
+        lbImg.alt        = btn.dataset.title || '';
+        lbTitle.textContent = btn.dataset.title || '';
+        lbTags.textContent  = btn.dataset.tags  || '';
+        lbDesc.textContent  = btn.dataset.desc  || '';
+        lb.hidden = false;
+        // Trigger opacity transition on next frame
+        requestAnimationFrame(() => lb.classList.add('is-open'));
+        document.body.style.overflow = 'hidden';
+        lbClose.focus();
       }
 
-      function layout(){
-        for (let i=0;i<N;i++){
-          const a = rad(i*STEP_DEG) + angle;
-          const x = Math.sin(a) * RADIUS_Z;
-          const z = Math.cos(a) * RADIUS_Z;
-
-          const norm = Math.abs(Math.atan2(Math.sin(a), Math.cos(a))); // [0..π]
-          const t = clamp01((norm - FADE_START) / (FADE_END - FADE_START));
-          const opacity = 1 - t;
-
-          const el = items[i];
-          el.style.transform = `translate3d(-50%,-50%, ${-z}px) translateX(${x}px) rotateY(${deg(a)}deg)`;
-          el.style.opacity = opacity.toFixed(3);
-          el.style.pointerEvents = opacity > 0.25 ? 'auto' : 'none';
-          el.style.zIndex = String(100000 - Math.round(Math.abs(z)));
-        }
+      function close() {
+        lb.classList.remove('is-open');
+        lb.addEventListener('transitionend', () => {
+          lb.hidden = true;
+          document.body.style.overflow = '';
+        }, { once: true });
       }
 
-      function tick(now){
-        const dt = Math.min(0.05, (now - lastT)*0.001); lastT = now;
-
-        // Always move to the nearest representation of 'target'
-        target = wrapNear(target, angle);
-
-        // Ease angle toward target
-        angle += (target - angle) * Math.min(1, dt * 8);
-
-        // Keep internal state bounded to avoid precision drift
-        if (Math.abs(target - angle) < 1e-8) {
-          angle  = ((angle % TWO_PI) + TWO_PI) % TWO_PI;
-          target = angle;
-        }
-
-        layout();
-        requestAnimationFrame(tick);
-      }
-
-      // Wheel: only horizontal; vertical bubbles to page
-      root.addEventListener('wheel', (e)=>{
-        const absX = Math.abs(e.deltaX), absY = Math.abs(e.deltaY);
-        if (absX > absY + 2) { e.preventDefault(); target += e.deltaX * 0.0015; }
-      }, {passive:false});
-
-      // Drag (mouse)
-      let dragging=false, startX=0, startTarget=0;
-      root.addEventListener('mousedown', (e)=>{ dragging=true; startX=e.clientX; startTarget=target; });
-      window.addEventListener('mousemove', (e)=>{ if (!dragging) return; const dx=e.clientX-startX; target = startTarget + dx * 0.0042; });
-      window.addEventListener('mouseup', ()=> dragging=false);
-
-      // Touch: only intercept horizontal
-      let touchStartX=0, touchStartY=0, touchActive=false;
-      root.addEventListener('touchstart', (e)=>{ touchActive=true; touchStartX=e.touches[0].clientX; touchStartY=e.touches[0].clientY; }, {passive:true});
-      root.addEventListener('touchmove',  (e)=>{
-        if (!touchActive) return;
-        const dx = e.touches[0].clientX - touchStartX;
-        const dy = e.touches[0].clientY - touchStartY;
-        if (Math.abs(dx) > Math.abs(dy) + 4){ e.preventDefault(); target += dx * 0.0009; touchStartX = e.touches[0].clientX; }
-      }, {passive:false});
-      root.addEventListener('touchend', ()=> touchActive=false);
-
-      // Arrows + keyboard (keep your mapping)
-      const step = rad(STEP_DEG);
-      prevBtn?.addEventListener('click', ()=> { target += step; });
-      nextBtn?.addEventListener('click', ()=> { target -= step; });
-      root.setAttribute('tabindex', '0');
-      root.addEventListener('keydown', (e)=>{
-        if (e.key === 'ArrowLeft')  { e.preventDefault(); target += step; }
-        if (e.key === 'ArrowRight') { e.preventDefault(); target -= step; }
+      // Open on thumbnail click
+      document.querySelectorAll('.art-thumb:not(.art-thumb--empty)').forEach(btn => {
+        btn.addEventListener('click', () => open(btn));
       });
 
-      // ---- Delegated Tilt-on-hover for .wheel-card ----
-      (function tiltCardsInCarousel(){
-        const MAX_DEG = 8;
-        let activeCard = null;
-
-        function findCard(el){ return el?.closest ? el.closest('.wheel-card') : null; }
-        function setTilt(card, e){
-          const r = card.getBoundingClientRect(); if (!r.width || !r.height) return;
-          const x = (e.clientX - r.left) / r.width;   // 0..1
-          const y = (e.clientY - r.top)  / r.height;  // 0..1
-          const dx = x - 0.5, dy = y - 0.5;
-          card.style.setProperty('--tiltY',  ( dx * MAX_DEG).toFixed(2) + 'deg');
-          card.style.setProperty('--tiltX', (-dy * MAX_DEG).toFixed(2) + 'deg');
-        }
-        function resetTilt(card){
-          card.style.setProperty('--tiltX','0deg');
-          card.style.setProperty('--tiltY','0deg');
-        }
-
-        // Start tracking when entering a card
-        track.addEventListener('pointerenter', (e)=>{
-          const card = findCard(e.target);
-          if (!card) return;
-          activeCard = card;
-          setTilt(card, e);
-        }, true);
-
-        // Update tilt while over the card; handle moving between cards
-        track.addEventListener('pointermove', (e)=>{
-          if (!activeCard){
-            const c = findCard(e.target);
-            if (c) activeCard = c; else return;
-          }
-          const current = findCard(e.target);
-          if (current && current !== activeCard){
-            resetTilt(activeCard);
-            activeCard = current;
-          }
-          if (activeCard) setTilt(activeCard, e);
-        });
-
-        // Leave/reset
-        track.addEventListener('pointerleave', ()=>{
-          if (activeCard) resetTilt(activeCard);
-          activeCard = null;
-        }, true);
-      })();
-
-      // Init
-      layout();
-      requestAnimationFrame(tick);
+      // Close on button, backdrop click, or Escape
+      lbClose.addEventListener('click', close);
+      lb.addEventListener('click', e => { if (e.target === lb) close(); });
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && !lb.hidden) close();
+      });
     })();
+
   </script>
-  <script>
-/* =========================================================
-   Tilt-on-hover for carousel cards (delegated & robust)
-   - Tilts only the card under the cursor
-   - Resets on leave
-   - Works despite the <a.wheel-item> wrapper and ring rotation
-   ========================================================= */
-(function tiltCardsInCarousel(){
-  const track = document.querySelector('[data-wheel] [data-track]');
-  if (!track) return;
-
-  const MAX_DEG = 8;   // tilt strength
-  let activeCard = null;
-
-  // Find the actual .wheel-card under an event target
-  function findCard(el){
-    return el?.closest ? el.closest('.wheel-card') : null;
-  }
-
-  function setTilt(card, e){
-    const r = card.getBoundingClientRect();
-    if (!r.width || !r.height) return;
-    const x = (e.clientX - r.left) / r.width;    // 0..1
-    const y = (e.clientY - r.top)  / r.height;   // 0..1
-    const dx = x - 0.5, dy = y - 0.5;
-    card.style.setProperty('--tiltY',  ( dx * MAX_DEG).toFixed(2) + 'deg');
-    card.style.setProperty('--tiltX', (-dy * MAX_DEG).toFixed(2) + 'deg');
-  }
-
-  function resetTilt(card){
-    card.style.setProperty('--tiltX', '0deg');
-    card.style.setProperty('--tiltY', '0deg');
-  }
-
-  // Enter: start tracking the card under the pointer
-  track.addEventListener('pointerenter', (e)=>{
-    const card = findCard(e.target);
-    if (!card) return;
-    activeCard = card;
-    setTilt(card, e);
-  }, true);
-
-  // Move: update tilt; if pointer moves to a different card, switch
-  track.addEventListener('pointermove', (e)=>{
-    const current = findCard(e.target);
-    if (!current) return;
-    if (activeCard && current !== activeCard) resetTilt(activeCard);
-    activeCard = current;
-    setTilt(activeCard, e);
-  });
-
-  // Leave: reset
-  track.addEventListener('pointerleave', ()=>{
-    if (activeCard) resetTilt(activeCard);
-    activeCard = null;
-  }, true);
-})();
-</script>
 </body>
 </html>
