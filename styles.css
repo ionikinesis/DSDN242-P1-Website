@@ -246,3 +246,4 @@ input:focus-visible,textarea:focus-visible{ border-color: var(--cyan); outline-c
   will-change: transform;
   pointer-events: auto; /* make sure the card can receive pointer events */
 }
+  <link rel="icon" type="image" href="favicon.png" />

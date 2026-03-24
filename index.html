@@ -6,7 +6,7 @@
   <title>Riku Yuki Darroch — Portfolio</title>
   <meta name="description" content="Portfolio of Riku Yuki Darroch — artist, designer, creative jack of all trades." />
 
-  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="icon"  href="favicon.png" type="image/png"/>
   <link rel="stylesheet" href="styles.css" />
 
   <style>
@@ -15,27 +15,14 @@
       *, *::before, *::after { animation-duration:.01ms!important; transition-duration:.01ms!important; scroll-behavior:auto!important; }
     }
 
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; scroll-snap-type: none !important; }
     body { overscroll-behavior-y: none; }
-
-    /* ── Kill any scroll-snap from old Copilot code ── */
-    html { scroll-snap-type: none !important; }
     * { scroll-snap-align: none !important; scroll-snap-stop: unset !important; }
 
-    /* ── Header always fixed to top, never scrolls away ── */
-    .site-header {
-      position: fixed !important;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-    }
-    /* Push body content down so it starts below the fixed header */
-    .masthead-body {
-      margin-top: 80px;
-    }
-
     :root {
-      --masthead-t: 280ms;
-      --page-maxw:  1180px;
+      --hdr-h: 0px;         /* set dynamically by JS once header renders */
+      --masthead-t: 260ms;
+      --page-maxw: 1180px;
       --text-100: #ffffff;
       --text-200: #b4bdd6;
       --text-300: #cdd6ea;
@@ -44,27 +31,52 @@
     }
 
     /* ═══════════════════════════
-       MASTHEAD
+       HEADER — always fixed
        ═══════════════════════════ */
+    .site-header {
+      position: fixed !important;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+    }
+
+    /* ═══════════════════════════
+       MASTHEAD
+       The masthead sits below the fixed header.
+       On scroll it fades + translates up using only
+       transform and opacity — compositor-only properties
+       that never cause layout shifts or scroll jank.
+       The wrapper has NO overflow:hidden so nothing is clipped.
+       ═══════════════════════════ */
+    .masthead-wrap {
+      margin-top: var(--hdr-h);
+      position: relative;
+      z-index: 2;
+      /* overflow: visible — never clip the logo */
+    }
+
     .masthead-body {
-      position: relative; z-index: 2;
-      padding: clamp(40px,6vw,80px) 0 clamp(28px,4vw,56px);
-      max-height: 700px; overflow: visible; opacity: 1;
+      padding: clamp(32px,5vw,64px) 0 clamp(20px,3vw,44px);
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
       transition:
-        max-height var(--masthead-t) ease,
-        padding    var(--masthead-t) ease,
-        opacity    var(--masthead-t) ease,
-        margin     var(--masthead-t) ease;
+        transform var(--masthead-t) ease,
+        opacity   var(--masthead-t) ease;
+      will-change: transform, opacity;
     }
     body.is-scrolled .masthead-body {
-      max-height: 0; padding: 0; opacity: 0;
-      overflow: hidden; margin-bottom: clamp(16px,3vh,36px);
+      transform: translateY(-20px);
+      opacity: 0;
+      pointer-events: none;
     }
+
     .masthead-inner {
       max-width: var(--page-maxw); margin-inline: auto; padding: 0 24px;
-      display: grid; gap: clamp(14px,2.5vw,28px);
+      display: grid; gap: clamp(12px,2vw,24px);
       place-items: center; text-align: center;
     }
+
+    /* WebGL distortion holder */
     .logo-distort { position: relative; width: 100%; }
     .logo-distort canvas {
       position: absolute; inset: 0; width: 100%; height: 100%;
@@ -76,13 +88,14 @@
       display: block; width: 100%; height: auto; object-fit: contain;
       filter: drop-shadow(0 8px 24px rgba(0,0,0,.35));
     }
+
     .masthead-tagline {
       font-weight: 700; letter-spacing: .3px;
-      font-size: clamp(14px,2vw,28px); line-height: 1.2;
+      font-size: clamp(14px,2vw,26px); line-height: 1.2;
       color: var(--text-100); margin: 0;
     }
-    /* Logo hidden in header while masthead is on screen,
-       snaps back in when masthead collapses on scroll */
+
+    /* Header logo: hidden while masthead visible, shown when scrolled */
     body:not(.is-scrolled) .site-header .brand-logo {
       opacity: 0; transform: translateY(4px) scale(.96); pointer-events: none;
       transition: opacity var(--masthead-t) ease, transform var(--masthead-t) ease;
@@ -93,16 +106,13 @@
     }
 
     /* ═══════════════════════════
-       SECTION DIVIDERS
+       SECTIONS
        ═══════════════════════════ */
-    /* Each merged section gets a scroll-target id and generous padding
-       so the sticky header doesn't cover the heading */
-    .page-section {
-      scroll-margin-top: 90px; /* clears the sticky header */
-    }
+    .page-section { scroll-margin-top: calc(var(--hdr-h) + 12px); }
+    :target      { scroll-margin-top: calc(var(--hdr-h) + 12px); }
 
     /* ═══════════════════════════
-       CAROUSEL (Home / Selected Work)
+       CAROUSEL
        ═══════════════════════════ */
     .wheel-section { padding: clamp(8px,1.5vh,20px) 0 clamp(32px,5vh,64px); }
     .wheel-section .container { max-width: var(--page-maxw); padding: 0 16px; }
@@ -180,12 +190,11 @@
     .wheel-dot[aria-current="true"] { background: var(--moon); transform: scale(1.45); }
 
     /* ═══════════════════════════
-       TILT CARDS (artworks / game / graphic)
+       TILT CARDS
        ═══════════════════════════ */
     .tilt-card {
       transform: perspective(1000px) rotateX(0deg) rotateY(0deg);
-      transform-style: preserve-3d;
-      transition: transform 120ms ease;
+      transform-style: preserve-3d; transition: transform 120ms ease;
       will-change: transform;
     }
     .tilt-card.is-hovering {
@@ -199,237 +208,109 @@
     }
 
     /* ═══════════════════════════
-       CONTACT BUTTONS (from contact.html)
+       CONTACT BUTTONS
        ═══════════════════════════ */
     .contact-header { max-width: 760px; }
-    .contact-actions {
-      display: grid; gap: var(--space-4,1rem);
-      margin-top: var(--space-6,2rem); max-width: 520px;
-    }
+    .contact-actions { display: grid; gap: 1rem; margin-top: 2rem; max-width: 520px; }
     .btn-solid {
-      display: flex; align-items: center; gap: 0.75rem;
-      width: 100%; font-weight: 700; letter-spacing: 0.2px;
+      display: flex; align-items: center; gap: .75rem;
+      width: 100%; font-weight: 700; letter-spacing: .2px;
       padding: 1rem 1.25rem; border-radius: 12px;
-      color: #061018; background: var(--moon);
-      border: 1px solid var(--moon);
+      color: #061018; background: var(--moon); border: 1px solid var(--moon);
       box-shadow: 0 10px 28px rgba(0,0,0,.35);
       transition: transform .15s ease, box-shadow .25s ease, background-color .2s ease;
       text-decoration: none;
     }
-    .btn-solid:hover, .btn-solid:focus-visible {
+    .btn-solid:hover,.btn-solid:focus-visible {
       transform: translateY(-2px); background: #ffe29a;
       border-color: #ffe29a; box-shadow: 0 18px 48px rgba(0,0,0,.55);
     }
-    .btn-secondary {
-      background: rgba(16,26,51,.55); border-color: rgba(255,255,255,.22);
-      color: var(--text-100);
-    }
-    .btn-secondary:hover, .btn-secondary:focus-visible {
-      background: rgba(16,26,51,.70); border-color: rgba(255,255,255,.30);
-      color: var(--text-100);
-    }
+    .btn-secondary { background: rgba(16,26,51,.55); border-color: rgba(255,255,255,.22); color: var(--text-100); }
+    .btn-secondary:hover,.btn-secondary:focus-visible { background: rgba(16,26,51,.70); border-color: rgba(255,255,255,.30); color: var(--text-100); }
     .btn-solid svg { width:22px; height:22px; flex-shrink:0; stroke:currentColor; fill:currentColor; }
-    .contact-note { margin-top:var(--space-4,1rem); color:var(--text-300); font-size:.95rem; max-width:520px; }
+    .contact-note { margin-top:1rem; color:var(--text-300); font-size:.95rem; max-width:520px; }
 
     /* ═══════════════════════════
-       ABOUT layout
+       ABOUT
        ═══════════════════════════ */
-    .about-grid {
-      display: grid;
-      grid-template-columns: min(420px,45vw) 1fr;
-      gap: var(--space-7,3rem); align-items: start;
-    }
-    .about-photo { max-width: 420px; }
-    .about-photo img { width:100%; height:auto; border-radius:var(--radius-lg,22px); box-shadow:var(--shadow-1,0 20px 48px rgba(0,0,0,.4)); object-fit:cover; }
-    .about-content { display:grid; gap:var(--space-5,1.5rem); }
-    .about-list { margin:var(--space-3,.75rem) 0; padding-left:1.25em; color:var(--text-200); }
+    .about-grid { display:grid; grid-template-columns:min(420px,45vw) 1fr; gap:3rem; align-items:start; }
+    .about-photo { max-width:420px; }
+    .about-photo img { width:100%; height:auto; border-radius:22px; box-shadow:0 20px 48px rgba(0,0,0,.4); object-fit:cover; }
+    .about-content { display:grid; gap:1.5rem; }
+    .about-list { margin:.75rem 0; padding-left:1.25em; color:var(--text-200); }
     .about-list li { margin-bottom:.4rem; }
-    .about-cta { margin-top: var(--space-4,1rem); }
-    .button {
-      display: inline-block; padding: .75rem 1.5rem;
-      border-radius: 12px; font-weight: 700;
-      background: var(--moon); color: #061018;
-      border: 1px solid var(--moon);
-      transition: transform .15s ease, box-shadow .2s ease;
-      text-decoration: none;
-    }
-    .button:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,.35); }
-    @media (max-width:900px) {
-      .about-grid { grid-template-columns:1fr; }
-      .about-photo { max-width:520px; margin-inline:auto; }
-    }
+    .about-cta { margin-top:1rem; }
+    .button { display:inline-block; padding:.75rem 1.5rem; border-radius:12px; font-weight:700; background:var(--moon); color:#061018; border:1px solid var(--moon); transition:transform .15s ease, box-shadow .2s ease; text-decoration:none; }
+    .button:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(0,0,0,.35); }
+    @media (max-width:900px) { .about-grid { grid-template-columns:1fr; } .about-photo { max-width:520px; margin-inline:auto; } }
 
-    .bg-blur { pointer-events: none; z-index: 1; }
-
-    /* Smooth-scroll offset for anchor links from nav */
-    :target { scroll-margin-top: 90px; }
-  
     /* ═══════════════════════════
        ARTWORK THUMBNAIL GRID
        ═══════════════════════════ */
-    .art-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-      margin-top: var(--space-5, 1.5rem);
-    }
-    @media (max-width: 700px) {
-      .art-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-    }
-    @media (max-width: 420px) {
-      .art-grid { grid-template-columns: repeat(2, 1fr); gap: 5px; }
-    }
+    .art-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-top:1.5rem; }
+    @media (max-width:700px) { .art-grid { grid-template-columns:repeat(3,1fr); gap:6px; } }
+    @media (max-width:420px) { .art-grid { grid-template-columns:repeat(2,1fr); gap:5px; } }
 
     .art-thumb {
-      position: relative;
-      aspect-ratio: 1 / 1;
-      overflow: hidden;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(16,26,51,.4);
-      cursor: pointer;
-      padding: 0;
-      transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+      position:relative; aspect-ratio:1/1; overflow:hidden; border-radius:10px;
+      border:1px solid rgba(255,255,255,.12); background:rgba(16,26,51,.4);
+      cursor:pointer; padding:0;
+      transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
     }
-    .art-thumb:not(.art-thumb--empty):hover {
-      transform: scale(1.04);
-      border-color: rgba(255,255,255,.35);
-      box-shadow: 0 8px 24px rgba(0,0,0,.5);
-      z-index: 1;
-    }
-    .art-thumb img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      display: block;
-      border-radius: 0;
-      transition: filter .2s ease;
-      pointer-events: none;
-    }
-    .art-thumb:not(.art-thumb--empty):hover img {
-      filter: brightness(1.1);
-    }
-
-    /* Empty placeholder slots */
-    .art-thumb--empty {
-      cursor: default;
-      display: grid; place-items: center;
-      color: rgba(255,255,255,.18);
-      font-size: 1.4rem;
-      border-style: dashed;
-    }
-    .art-thumb--empty span { pointer-events: none; }
+    .art-thumb:not(.art-thumb--empty):hover { transform:scale(1.04); border-color:rgba(255,255,255,.35); box-shadow:0 8px 24px rgba(0,0,0,.5); z-index:1; }
+    .art-thumb img { width:100%; height:100%; object-fit:cover; display:block; border-radius:0; transition:filter .2s ease; pointer-events:none; }
+    .art-thumb:not(.art-thumb--empty):hover img { filter:brightness(1.1); }
+    .art-thumb--empty { cursor:default; display:grid; place-items:center; color:rgba(255,255,255,.18); font-size:1.4rem; border-style:dashed; }
+    .art-thumb--empty span { pointer-events:none; }
 
     /* ═══════════════════════════
-       LIGHTBOX MODAL
+       LIGHTBOX
        ═══════════════════════════ */
-    /* ── Lightbox: subtle dim scrim, glass panel floats forward ── */
     .art-lightbox {
-      position: fixed; inset: 0; z-index: 200;
-      display: flex; align-items: center; justify-content: center;
-      padding: 24px;
-      /* Very light dim — the page still shows behind */
-      background: rgba(5, 10, 20, .38);
-      opacity: 0;
-      transition: opacity .28s ease;
+      position:fixed; inset:0; z-index:200;
+      display:flex; align-items:center; justify-content:center;
+      padding:24px; background:rgba(5,10,20,.38);
+      opacity:0; transition:opacity .28s ease;
     }
-    .art-lightbox[hidden] { display: none; }
-    .art-lightbox.is-open { opacity: 1; }
-
-    /* The glass panel itself */
+    .art-lightbox[hidden] { display:none; }
+    .art-lightbox.is-open { opacity:1; }
     .art-lightbox__inner {
-      position: relative;
-      display: grid;
-      grid-template-columns: 1fr 300px;
-      gap: 0;
-      width: 100%;
-      max-width: 1060px;
-      max-height: 88vh;
-      border-radius: 24px;
-      border: 1px solid rgba(255,255,255,.20);
-      background: rgba(16, 26, 51, .52);
-      backdrop-filter: blur(28px) saturate(150%) contrast(110%);
-      -webkit-backdrop-filter: blur(28px) saturate(150%) contrast(110%);
-      box-shadow:
-        0 32px 80px rgba(0,0,0,.55),
-        inset 0 0 0 1px rgba(255,255,255,.07);
-      overflow: hidden;
-      /* Pop forward on open */
-      transform: scale(.96) translateY(10px);
-      transition: transform .28s cubic-bezier(.34,1.56,.64,1);
+      position:relative; display:grid;
+      grid-template-columns:1fr 300px; gap:0;
+      width:100%; max-width:1060px; max-height:88vh;
+      border-radius:24px; border:1px solid rgba(255,255,255,.20);
+      background:rgba(16,26,51,.52);
+      backdrop-filter:blur(28px) saturate(150%) contrast(110%);
+      -webkit-backdrop-filter:blur(28px) saturate(150%) contrast(110%);
+      box-shadow:0 32px 80px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.07);
+      overflow:hidden;
+      transform:scale(.96) translateY(10px);
+      transition:transform .28s cubic-bezier(.34,1.56,.64,1);
     }
-    .art-lightbox.is-open .art-lightbox__inner {
-      transform: scale(1) translateY(0);
-    }
-    @media (max-width: 800px) {
-      .art-lightbox__inner {
-        grid-template-columns: 1fr;
-        max-height: 88vh;
-        overflow-y: auto;
-      }
-    }
-
-    /* Close button — top-right corner of the panel */
+    .art-lightbox.is-open .art-lightbox__inner { transform:scale(1) translateY(0); }
+    @media (max-width:800px) { .art-lightbox__inner { grid-template-columns:1fr; max-height:88vh; overflow-y:auto; } }
     .art-lightbox__close {
-      position: absolute; top: 14px; right: 14px;
-      width: 36px; height: 36px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.22);
-      background: rgba(255,255,255,.08);
-      color: #fff; cursor: pointer;
-      display: grid; place-items: center;
-      transition: background .15s ease, transform .15s ease;
-      z-index: 2;
+      position:absolute; top:14px; right:14px;
+      width:36px; height:36px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.22); background:rgba(255,255,255,.08);
+      color:#fff; cursor:pointer; display:grid; place-items:center;
+      transition:background .15s ease, transform .15s ease; z-index:2;
     }
-    .art-lightbox__close:hover { background: rgba(255,255,255,.18); transform: scale(1.1); }
-    .art-lightbox__close svg { width: 16px; height: 16px; }
-
-    /* Image side */
+    .art-lightbox__close:hover { background:rgba(255,255,255,.18); transform:scale(1.1); }
+    .art-lightbox__close svg { width:16px; height:16px; }
     .art-lightbox__img-wrap {
-      display: flex; align-items: center; justify-content: center;
-      padding: 28px;
-      min-height: 300px;
-      background: rgba(0,0,0,.15);
-      border-right: 1px solid rgba(255,255,255,.08);
+      display:flex; align-items:center; justify-content:center;
+      padding:28px; min-height:300px; background:rgba(0,0,0,.15);
+      border-right:1px solid rgba(255,255,255,.08);
     }
-    @media (max-width: 800px) {
-      .art-lightbox__img-wrap {
-        border-right: none;
-        border-bottom: 1px solid rgba(255,255,255,.08);
-        padding: 20px;
-        min-height: 200px;
-      }
-    }
-    .art-lightbox__img-wrap img {
-      display: block;
-      max-width: 100%;
-      max-height: calc(88vh - 80px);
-      width: auto; height: auto;
-      border-radius: 12px;
-      object-fit: contain;
-      box-shadow: 0 12px 40px rgba(0,0,0,.4);
-    }
+    @media (max-width:800px) { .art-lightbox__img-wrap { border-right:none; border-bottom:1px solid rgba(255,255,255,.08); padding:20px; min-height:200px; } }
+    .art-lightbox__img-wrap img { display:block; max-width:100%; max-height:calc(88vh - 80px); width:auto; height:auto; border-radius:12px; object-fit:contain; box-shadow:0 12px 40px rgba(0,0,0,.4); }
+    .art-lightbox__info { display:grid; align-content:start; gap:14px; padding:32px 24px 28px; }
+    .art-lightbox__title { font-size:clamp(17px,2vw,26px); margin:0; color:var(--text-100); padding-right:28px; line-height:1.25; }
+    .art-lightbox__tags  { font-size:.88rem; color:var(--text-300); margin:0; }
+    .art-lightbox__desc  { font-size:.97rem; color:var(--text-200); line-height:1.7; margin:0; }
 
-    /* Info side */
-    .art-lightbox__info {
-      display: grid;
-      align-content: start;
-      gap: 14px;
-      padding: 32px 24px 28px;
-    }
-    .art-lightbox__title {
-      font-size: clamp(17px, 2vw, 26px);
-      margin: 0; color: var(--text-100);
-      padding-right: 28px; /* don't overlap close btn */
-      line-height: 1.25;
-    }
-    .art-lightbox__tags {
-      font-size: .88rem; color: var(--text-300); margin: 0;
-    }
-    .art-lightbox__desc {
-      font-size: .97rem; color: var(--text-200);
-      line-height: 1.7; margin: 0;
-    }
-
+    .bg-blur { pointer-events:none; z-index:1; }
   </style>
 </head>
 <body>
@@ -440,7 +321,7 @@
   <a class="skip-link" href="#home">Skip to content</a>
 
   <!-- ═══════════════════════════════════════
-       STICKY HEADER — nav links are anchors
+       FIXED HEADER
        ═══════════════════════════════════════ -->
   <header class="site-header" role="banner">
     <div class="container">
@@ -465,28 +346,28 @@
   </header>
 
   <!-- ═══════════════════════════════════════
-       MASTHEAD — big logo
+       MASTHEAD WRAPPER — fixed height, never changes
+       Inner content slides up on scroll via transform
        ═══════════════════════════════════════ -->
-  <div class="masthead-body" id="masthead" aria-label="Site masthead">
-    <div class="masthead-inner">
-      <div class="logo-distort" id="logoHolder">
-        <img class="logo-wide" id="logoImg" src="LOGO.png" alt="Riku Yuki Darroch wordmark" />
-        <canvas id="logoGL" aria-hidden="true"></canvas>
+  <div class="masthead-wrap" id="mastheadWrap">
+    <div class="masthead-body" id="masthead">
+      <div class="masthead-inner">
+        <div class="logo-distort" id="logoHolder">
+          <img class="logo-wide" id="logoImg" src="LOGO.png" alt="Riku Yuki Darroch wordmark" />
+          <canvas id="logoGL" aria-hidden="true"></canvas>
+        </div>
+        <p class="masthead-tagline">Artist, Designer, Creative Jack of All Trades</p>
       </div>
-      <p class="masthead-tagline">Artist, Designer, Creative Jack of All Trades</p>
     </div>
   </div>
 
   <main>
 
-    <!-- ═══════════════════════════════════════
-         HOME — Selected Work carousel
-         ═══════════════════════════════════════ -->
+    <!-- HOME -->
     <section id="home" class="wheel-section page-section" aria-labelledby="work-title">
       <div class="container">
         <h2 id="work-title">Selected Work</h2>
-        <p class="section-intro">Swipe or use the arrows to browse.</p>
-
+        <p class="section-intro">Use Arrows to Browse.</p>
         <div class="wheel-viewport" data-wheel>
           <div class="wheel-arrows">
             <button class="wheel-arrow" type="button" data-prev aria-label="Previous project">
@@ -499,7 +380,7 @@
           <div class="wheel-track" data-track>
             <a class="wheel-item" href="project-template.html">
               <article class="wheel-card">
-                <figure><img src="almost_done.png" alt="Red Moon Concept Art Preview" loading="lazy" /></figure>
+                <figure><img src="almost done.png" alt="Red Moon Concept Art Preview" loading="lazy" /></figure>
                 <div class="project-meta">
                   <h3 class="project-title">"Red Moon" World Concept Deck</h3>
                   <p class="project-tags">World Building · Concept Art · Character Design</p>
@@ -508,9 +389,9 @@
                 </div>
               </article>
             </a>
-            <a class="wheel-item" href="case-studies/project-02.html">
+            <a class="wheel-item" href="project-template.html">
               <article class="wheel-card">
-                <figure><img src="images/project-02-thumb.jpg" alt="Reflection prototype thumbnail" loading="lazy" /></figure>
+                <figure><img src="images/Game Design/e0bd192a-01.png" alt="Reflection prototype thumbnail" loading="lazy" /></figure>
                 <div class="project-meta">
                   <h3 class="project-title">"Reflection" Horror Game Prototype</h3>
                   <p class="project-tags">GDD · Pitch · UE5 Prototype</p>
@@ -519,7 +400,7 @@
                 </div>
               </article>
             </a>
-            <a class="wheel-item" href="case-studies/project-03.html">
+            <a class="wheel-item" href="project-template.html">
               <article class="wheel-card">
                 <figure><img src="album cover art.png" alt="Album design mock cover" loading="lazy" /></figure>
                 <div class="project-meta">
@@ -530,7 +411,7 @@
                 </div>
               </article>
             </a>
-            <a class="wheel-item" href="case-studies/project-04.html">
+            <a class="wheel-item" href="project-template.html">
               <article class="wheel-card">
                 <figure><img src="3E7825E3-E6DF-45F9-88AA-05536A53BCD9-7484-000002D0C700F917.jpg" alt="Photography preview" loading="lazy" /></figure>
                 <div class="project-meta">
@@ -543,7 +424,6 @@
             </a>
           </div>
         </div>
-
         <div class="wheel-dots" role="tablist" aria-label="Project selector" data-dots>
           <button class="wheel-dot" type="button" data-dot="0" aria-label="Project 1" aria-current="true"></button>
           <button class="wheel-dot" type="button" data-dot="1" aria-label="Project 2"></button>
@@ -553,99 +433,47 @@
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════
-         ARTWORKS — thumbnail grid + lightbox
-         ═══════════════════════════════════════ -->
+    <!-- ARTWORKS -->
     <section id="artworks" class="work page-section" aria-labelledby="artworks-title">
       <div class="container">
         <h1 id="artworks-title">Artworks</h1>
         <p class="section-intro">Concept art, illustrations, environment studies, and visual explorations. Click any thumbnail to view.</p>
-
-        <!-- 5-column thumbnail grid -->
         <div class="art-grid" role="list">
-
-          <button class="art-thumb" role="listitem"
-            data-img="images/artworks/art-01-thumb.jpg"
-            data-full="images/artworks/art-01-thumb.jpg"
-            data-title="Environment Concept #01"
-            data-tags="Concept Art · Environment"
-            data-desc="Atmospheric landscape exploring mood and scale. A study in depth, colour temperature, and the relationship between light and fog in a natural setting."
-            aria-label="Open Environment Concept #01">
-            <img src="images/artworks/art-01-thumb.jpg" alt="Environment concept thumbnail." loading="lazy" />
+          <button class="art-thumb" role="listitem" data-img="images/artworks/tokyo settlement.png" data-full="images/artworks/tokyo settlement.png" data-title="Cityscape Concept" data-tags="Concept Art · Environment" data-desc="Sci-Fi Mega City-scape" aria-label="Sci-Fi Cityscape">
+            <img src="images/artworks/tokyo settlement.png" alt="Environment concept thumbnail." loading="lazy" />
           </button>
-
-          <button class="art-thumb" role="listitem"
-            data-img="images/artworks/art-02-thumb.jpg"
-            data-full="images/artworks/art-02-thumb.jpg"
-            data-title="Character Study #01"
-            data-tags="Concept Art · Character"
-            data-desc="Exploring silhouettes and gesture for a rogue archetype. Multiple poses and costume variations to nail the visual read from a distance."
-            aria-label="Open Character Study #01">
-            <img src="images/artworks/art-02-thumb.jpg" alt="Character concept thumbnail." loading="lazy" />
+          <button class="art-thumb" role="listitem" data-img="images/artworks/death devil iteration 4.png" data-full="images/artworks/death devil iteration 4.png" data-title="Monster Design Concept art" data-tags="Concept Art · Monster" data-desc="Monster Design For Red Moon World Concept" aria-label="Monster Design Concept Art">
+            <img src="images/artworks/death devil iteration 4.png" alt="Character concept thumbnail." loading="lazy" />
           </button>
-
-          <button class="art-thumb" role="listitem"
-            data-img="images/artworks/art-03-thumb.jpg"
-            data-full="images/artworks/art-03-thumb.jpg"
-            data-title="Vehicle Concept #01"
-            data-tags="Concept Design · Vehicle"
-            data-desc="Sketch to render: noir-inspired hover bike. Designed around a retro-futurist aesthetic with emphasis on surface material and light interaction."
-            aria-label="Open Vehicle Concept #01">
-            <img src="images/artworks/art-03-thumb.jpg" alt="Vehicle concept thumbnail." loading="lazy" />
+          <button class="art-thumb" role="listitem" data-img="images/artworks/Old World Roads in the Dark Zone.png" data-full="images/artworks/Old World Roads in the Dark Zone.png" data-title="Concept Art in Nature Setting" data-tags="Concept Design · Nature" data-desc="Concept art for mood in nature setting" aria-label="Concept art in nature">
+            <img src="images/artworks/Old World Roads in the Dark Zone.png" alt="Vehicle concept thumbnail." loading="lazy" />
           </button>
-
-          <button class="art-thumb" role="listitem"
-            data-img="images/artworks/art-04-thumb.jpg"
-            data-full="images/artworks/art-04-thumb.jpg"
-            data-title="Environment Concept #02"
-            data-tags="Concept Art · Environment"
-            data-desc="Night city alley — neon lighting study. Exploring how artificial light sources interact with wet surfaces and urban grime."
-            aria-label="Open Environment Concept #02">
-            <img src="images/artworks/art-04-thumb.jpg" alt="Neon city alley study thumbnail." loading="lazy" />
+          <button class="art-thumb" role="listitem" data-img="images/artworks/Swamp in the dark zone concept art.png" data-full="images/artworks/Swamp in the dark zone concept art.png" data-title="Concept Art in Nature Setting" data-tags="Concept Art · Environment" data-desc="oncept art for mood in nature setting" aria-label="Concept art in nature">
+            <img src="images/artworks/Swamp in the dark zone concept art.png" alt="Neon city alley study thumbnail." loading="lazy" />
           </button>
-
-          <button class="art-thumb" role="listitem"
-            data-img="almost_done.png"
-            data-full="almost_done.png"
-            data-title="Red Moon — Key Visual"
-            data-tags="Concept Art · World Building"
-            data-desc="Key visual from the Red Moon world concept deck. Sets the tone and palette for the broader paranormal eco-narrative project."
-            aria-label="Open Red Moon Key Visual">
-            <img src="almost_done.png" alt="Red Moon key visual thumbnail." loading="lazy" />
+          <button class="art-thumb" role="listitem" data-img="almost done.png" data-full="almost done.png" data-title="Red Moon — Key Visual" data-tags="Concept Art · World Building" data-desc="Key visual from the Red Moon world concept deck. Sets the tone and palette for the broader paranormal eco-narrative project." aria-label="Open Red Moon Key Visual">
+            <img src="almost done.png" alt="Red Moon key visual thumbnail." loading="lazy" />
           </button>
-
-          <!-- Rows 2–5: placeholder slots — replace src/data-* with your real images -->
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-          <button class="art-thumb art-thumb--empty" role="listitem" disabled aria-hidden="true"><span>+</span></button>
-
+      <button class="art-thumb" role="listitem" data-img="images/artworks/Sakura Character Design.png" data-full="images/artworks/Sakura Character Design.png" data-title="Character Design 1" data-tags="Character Design" data-desc="Atmospheric landscape exploring mood and scale. A study in depth, colour temperature, and the relationship between light and fog in a natural setting." aria-label="Open Environment Concept #01">
+            <img src="images/artworks/Sakura Character Design.png" alt="Environment concept thumbnail." loading="lazy" />
+          </button>
+          <button class="art-thumb" role="listitem" data-img="images/artworks/Shiro Character design.png" data-full="images/artworks/Shiro Character design.png" data-title="Character Design 2" data-tags="Character Design" data-desc="Heroine Character Design" aria-label="Open Character Study #01">
+            <img src="images/artworks/Shiro Character design.png" alt="Character concept thumbnail." loading="lazy" />
+          </button>
+          <button class="art-thumb" role="listitem" data-img="images/artworks/Cowboy and Salmon Character Design.png" data-full="images/artworks/Cowboy and Salmon Character Design.png" data-title="Character Design 3" data-tags="Protagonist Character Design" data-desc="Protagonist Character Design" aria-label="Open Vehicle Concept #01">
+            <img src="images/artworks/Cowboy and Salmon Character Design.png" alt="Vehicle concept thumbnail." loading="lazy" />
+          </button>
+          <button class="art-thumb" role="listitem" data-img="images/artworks/Akira Characrter Design.png" data-full="images/artworks/Akira Characrter Design.png" data-title="Character Design 4" data-tags="Character Design" data-desc="Antagonist Character Design." aria-label="Antagonist Character Design">
+            <img src="images/artworks/Akira Characrter Design.png" alt="Neon city alley study thumbnail." loading="lazy" />
+          </button>
+          <button class="art-thumb" role="listitem" data-img="images/artworks/abandoned no character.png" data-full="images/artworks/abandoned no character.png" data-title="Red Moon — Key Visual" data-tags="Concept Art · World Building" data-desc="Key visual from the Red Moon world concept deck. Sets the tone and palette for the broader paranormal eco-narrative project." aria-label="Open Red Moon Key Visual">
+            <img src="images/artworks/abandoned no character.png" alt="Red Moon key visual thumbnail." loading="lazy" />
+          </button>
         </div>
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════
-         ARTWORK LIGHTBOX (shared modal)
-         ═══════════════════════════════════════ -->
+    <!-- LIGHTBOX -->
     <div id="art-lightbox" class="art-lightbox" role="dialog" aria-modal="true" aria-label="Artwork preview" hidden>
       <button class="art-lightbox__close" id="lbClose" aria-label="Close preview">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -662,19 +490,17 @@
       </div>
     </div>
 
-    <!-- ═══════════════════════════════════════
-         GAME DESIGN
-         ═══════════════════════════════════════ -->
+    <!-- GAME DESIGN -->
     <section id="game-design" class="work page-section" aria-labelledby="gd-title">
       <div class="container">
         <h1 id="gd-title">Game Design</h1>
         <p class="section-intro">Systems, prototypes, narrative, UX for games. Selected design-led work.</p>
         <div class="grid grid-portfolio">
           <article class="card project tilt-card">
-            <a class="project-link" href="projects/game-design/gd-01.html">
-              <figure class="project-thumb"><img src="images/game-design/gd-01-thumb.jpg" alt="Narrative RPG prototype thumbnail." loading="lazy" /></figure>
+            <a class="project-link" href="project-template.html">
+              <figure class="project-thumb"><img src="images/Game Design/e0bd192a-01.png" alt="Narrative RPG prototype thumbnail." loading="lazy" /></figure>
               <div class="project-meta">
-                <h3 class="project-title">Narrative RPG Prototype</h3>
+                <h3 class="project-title">Rainswept Dream Game Concept</h3>
                 <p class="project-tags">Systems · Narrative · Prototyping</p>
                 <p class="project-blurb">Player choice, dynamic encounters, reactive world design.</p>
                 <span class="project-cta">View project →</span>
@@ -682,35 +508,17 @@
             </a>
           </article>
           <article class="card project tilt-card">
-            <a class="project-link" href="projects/game-design/gd-02.html">
-              <figure class="project-thumb"><img src="images/game-design/gd-02-thumb.jpg" alt="Combat system exploration thumbnail." loading="lazy" /></figure>
+            <a class="project-link" href="project-template.html">
+              <figure class="project-thumb"><img src="images/Game Design/9efeaa93-1.png" alt="Combat system exploration thumbnail." loading="lazy" /></figure>
               <div class="project-meta">
-                <h3 class="project-title">Combat System Exploration</h3>
+                <h3 class="project-title">I Stole An Absurd Amount Of Money From Jeff Bezos And Now Every Amazon Employee In The City Is Chasing After Me!</h3>
                 <p class="project-tags">Systems · Tuning · UX</p>
                 <p class="project-blurb">Balancing depth and clarity through iterative tuning and flows.</p>
                 <span class="project-cta">View project →</span>
               </div>
             </a>
           </article>
-          <article class="card project tilt-card">
-            <a class="project-link" href="projects/game-design/gd-03.html">
-              <figure class="project-thumb"><img src="images/game-design/gd-03-thumb.jpg" alt="Onboarding and tutorialization thumbnail." loading="lazy" /></figure>
-              <div class="project-meta">
-                <h3 class="project-title">Onboarding &amp; Tutorialization</h3>
-                <p class="project-tags">UX · IA · Writing</p>
-                <p class="project-blurb">Reducing friction in early funnels with progressive disclosure.</p>
-                <span class="project-cta">View project →</span>
-              </div>
-            </a>
-          </article>
-          <article class="card project tilt-card">
-            <a class="project-link" href="projects/game-design/gd-04.html">
-              <figure class="project-thumb"><img src="images/game-design/gd-04-thumb.jpg" alt="HUD/UI for action game thumbnail." loading="lazy" /></figure>
-              <div class="project-meta">
-                <h3 class="project-title">HUD/UI for Action Game</h3>
-                <p class="project-tags">UI/UX · Accessibility</p>
-                <p class="project-blurb">Readable, reactive HUD with modular components.</p>
-                <span class="project-cta">View project →</span>
+
               </div>
             </a>
           </article>
@@ -718,19 +526,17 @@
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════
-         GRAPHIC DESIGN
-         ═══════════════════════════════════════ -->
+    <!-- GRAPHIC DESIGN -->
     <section id="graphic-design" class="work page-section" aria-labelledby="gdx-title">
       <div class="container">
         <h1 id="gdx-title">Graphic Design</h1>
         <p class="section-intro">Brand identity, posters, UI visuals, and campaign design.</p>
         <div class="grid grid-portfolio">
           <article class="card project tilt-card">
-            <a class="project-link" href="projects/graphic-design/gd-01.html">
-              <figure class="project-thumb"><img src="images/graphic-design/gd-01-thumb.jpg" alt="Branding project thumbnail." loading="lazy" /></figure>
+            <a class="project-link" href="project-template.html">
+              <figure class="project-thumb"><img src="images/graphic design/Beer_Can_Mockup_2.png" alt="Beer Can Beer_Can_Mockup_2" loading="lazy" /></figure>
               <div class="project-meta">
-                <h3 class="project-title">Indie Game Branding</h3>
+                <h3 class="project-title">Beer Can Mockup</h3>
                 <p class="project-tags">Identity · Logo · Guidelines</p>
                 <p class="project-blurb">Visual identity and logo system for an indie title.</p>
                 <span class="project-cta">View project →</span>
@@ -738,10 +544,10 @@
             </a>
           </article>
           <article class="card project tilt-card">
-            <a class="project-link" href="projects/graphic-design/gd-02.html">
-              <figure class="project-thumb"><img src="images/graphic-design/gd-02-thumb.jpg" alt="Poster series thumbnail." loading="lazy" /></figure>
+            <a class="project-link" href="project-template.html">
+              <figure class="project-thumb"><img src="images/graphic design/10a05136-5.png" alt="Hoodie Design" loading="lazy" /></figure>
               <div class="project-meta">
-                <h3 class="project-title">Poster Series</h3>
+                <h3 class="project-title">Hoodie Design Mockup</h3>
                 <p class="project-tags">Print · Typography</p>
                 <p class="project-blurb">A set of high-contrast posters with retro-noir accents.</p>
                 <span class="project-cta">View project →</span>
@@ -749,10 +555,10 @@
             </a>
           </article>
           <article class="card project tilt-card">
-            <a class="project-link" href="projects/graphic-design/gd-03.html">
-              <figure class="project-thumb"><img src="images/graphic-design/gd-03-thumb.jpg" alt="UI visual direction thumbnail." loading="lazy" /></figure>
+            <a class="project-link" href="project-template.html">
+              <figure class="project-thumb"><img src="images/graphic design/album cover art.png" alt="UI visual direction thumbnail." loading="lazy" /></figure>
               <div class="project-meta">
-                <h3 class="project-title">UI Visual Direction</h3>
+                <h3 class="project-title">Album Cover Concept</h3>
                 <p class="project-tags">UI · Visual Design</p>
                 <p class="project-blurb">Establishing color, type, and components for a game UI.</p>
                 <span class="project-cta">View project →</span>
@@ -760,10 +566,10 @@
             </a>
           </article>
           <article class="card project tilt-card">
-            <a class="project-link" href="projects/graphic-design/gd-04.html">
-              <figure class="project-thumb"><img src="images/graphic-design/gd-04-thumb.jpg" alt="Key art / title screen thumbnail." loading="lazy" /></figure>
+            <a class="project-link" href="project-template.html">
+              <figure class="project-thumb"><img src="images/graphic design/78f50c66-1.png" alt="Key art / title screen thumbnail." loading="lazy" /></figure>
               <div class="project-meta">
-                <h3 class="project-title">Key Art / Title Screen</h3>
+                <h3 class="project-title">Design Manifesto</h3>
                 <p class="project-tags">Campaign · Key Art</p>
                 <p class="project-blurb">Title screen and key visuals for launch beats.</p>
                 <span class="project-cta">View project →</span>
@@ -774,9 +580,7 @@
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════
-         ABOUT
-         ═══════════════════════════════════════ -->
+    <!-- ABOUT -->
     <section id="about" class="about page-section" aria-labelledby="about-title">
       <div class="container">
         <div class="about-grid">
@@ -785,66 +589,30 @@
           </figure>
           <div class="about-content">
             <h1 id="about-title">Who Is Riku Yuki Darroch?</h1>
-            <p>
-              My name is Riku Yuki Darroch. I studied at Victoria University of Wellington
-              and my degree is in Design Innovation majoring in Communication Design and Game Design.
-              <br>
-              I grew up in Te Anau, a small town in Southland New Zealand, and with my
-              Japanese Mother I have been back and forth between there and visiting
-              family in Ebetsu, Hokkaido, Japan. Although I struggled with my identity as a child, I now embrace it as a unique perspective on the world and use it as inspiration in my creative work.
-              <br>
-              I consider my curiosity to be one of my biggest strengths. I particularly
-              love finding inspirations from unlikely places; of course from projects by
-              people in my field, but also from music, politics, history and sciences. I
-              particularly resonate with themes of class inequality, environmentalism,
-              cultural cross-pollination, and social commentary.
-              <br>
-              My creative practice is primarily in art, concept design and game design, however I also have experience with graphic design, video production, photography, writing, animation, and audio production.
-            </p>
-            <p>
-              The reason why I made this career decision is because I believe in the
-              power of expressing ideas through creative fields and its ability to inhibit
-              change. Art as a career is often seen as a non essential job, finding itself
-              first at the chopping block whenever convenient by those in power. But the
-              ability to express ideas through art is something that not many other forms
-              of communication can replicate quite as effectively. I am sure you have
-              watched a movie that taught you about yourself or changed the way that
-              you view the world. Perhaps not quantifiably, but the way that creative
-              projects teach about abstract concepts is so valuable and I want to harness
-              that. There is a magic you feel when you listen to a beautiful song or
-              see a beautiful painting that no amount of scientific analysis is capable
-              of describing. It's that mysterious power that art holds that is meaningful.
-              No matter when or where, innately humanity fights to create, whether
-              under an oppressive regime or on the cave man walls. Maybe to call out
-              to the cosmos to prove that we were real once, or to be remembered in
-              the future, perhaps there is something divine about creating that keeps us
-              picking up our tools.
-              <br><br>
-              "A Earth without art is just a rock" — Kendrick Lamar
-            </p>
+            <p>My name is Riku Yuki Darroch. I studied at Victoria University of Wellington and my degree is in Design Innovation majoring in Communication Design and Game Design.<br>
+            I grew up in Te Anau, a small town in Southland New Zealand, and with my Japanese Mother I have been back and forth between there and visiting family in Ebetsu, Hokkaido, Japan. Although I struggled with my identity as a child, I now embrace it as a unique perspective on the world and use it as inspiration in my creative work.<br>
+            I consider my curiosity to be one of my biggest strengths. I particularly love finding inspirations from unlikely places; of course from projects by people in my field, but also from music, politics, history and sciences. I particularly resonate with themes of class inequality, environmentalism, cultural cross-pollination, and social commentary.<br>
+            My creative practice is primarily in art, concept design and game design, however I also have experience with graphic design, video production, photography, writing, animation, and audio production.</p>
+            <p>The reason why I made this career decision is because I believe in the power of expressing ideas through creative fields and its ability to inhibit change. Art as a career is often seen as a non essential job, finding itself first at the chopping block whenever convenient by those in power. But the ability to express ideas through art is something that not many other forms of communication can replicate quite as effectively. I am sure you have watched a movie that taught you about yourself or changed the way that you view the world. Perhaps not quantifiably, but the way that creative projects teach about abstract concepts is so valuable and I want to harness that. There is a magic you feel when you listen to a beautiful song or see a beautiful painting that no amount of scientific analysis is capable of describing. It's that mysterious power that art holds that is meaningful. No matter when or where, innately humanity fights to create, whether under an oppressive regime or on the cave man walls. Maybe to call out to the cosmos to prove that we were real once, or to be remembered in the future, perhaps there is something divine about creating that keeps us picking up our tools.<br><br>
+            "A Earth without art is just a rock" — Kendrick Lamar</p>
             <ul class="about-list">
               <li><strong>Strengths:</strong> Visual Design, Collaborative Working, Creative Ideation</li>
-              <li><strong>Softwares:</strong> Clip Studio Paint, Photoshop, Affinity, InDesign, DaVinci Resolve, Premiere Pro, FL Studio, Blender, Unreal Engine 5</li>
+              <li><strong>Softwares:</strong> Clip Studio Paint, Photoshop, Affinity, InDesign, DaVinci Resolve, Premiere Pro, FL Studio, Blender, Unreal Engine 5, Godot</li>
               <li><strong>Values:</strong> Environment, Identity, Work Ethic, Narrative</li>
             </ul>
-            <div class="about-cta">
-              <a class="button" href="#contact">Let's collaborate</a>
-            </div>
+
+            
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ═══════════════════════════════════════
-         CONTACT
-         ═══════════════════════════════════════ -->
+    <!-- CONTACT -->
     <section id="contact" class="contact page-section" aria-labelledby="contact-title">
       <div class="container">
         <div class="contact-header">
           <h1 id="contact-title">Contact</h1>
-          <p class="section-intro">
-            For professional enquiries, commissions, and collaborations, please reach out via the channels below.
-          </p>
+          <p class="section-intro">For professional enquiries, commissions, and collaborations, please reach out via the channels below.</p>
         </div>
         <div class="contact-actions" aria-label="Contact methods">
           <a class="btn-solid" href="mailto:rikuyuki50@gmail.com" rel="noopener">
@@ -882,11 +650,8 @@
 
   </main>
 
-  <!-- ═══════════════════════════════════════════════════════
-       SCRIPTS
-       ═══════════════════════════════════════════════════════ -->
   <script>
-    /* ── Nav toggle (mobile) ── */
+    /* ── Nav toggle ── */
     (function(){
       const toggle = document.querySelector('.nav-toggle');
       const menu   = document.getElementById('primary-menu');
@@ -896,31 +661,23 @@
         toggle.setAttribute('aria-expanded', String(!exp));
         menu.classList.toggle('open', !exp);
       });
-      /* Close menu when an anchor link is clicked */
-      menu.querySelectorAll('a').forEach(a => {
-        a.addEventListener('click', () => {
-          toggle.setAttribute('aria-expanded', 'false');
-          menu.classList.remove('open');
-        });
-      });
+      menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+        toggle.setAttribute('aria-expanded', 'false');
+        menu.classList.remove('open');
+      }));
     })();
 
-    /* ── Highlight active nav link on scroll ── */
+    /* ── Active nav highlight on scroll ── */
     (function(){
-      const sections = Array.from(document.querySelectorAll('.page-section[id], #home'));
+      const sections = Array.from(document.querySelectorAll('.page-section[id]'));
       const links    = Array.from(document.querySelectorAll('.site-nav a[href^="#"]'));
       const header   = document.querySelector('.site-header');
-
       function update(){
-        const headerH = header ? header.getBoundingClientRect().bottom : 80;
-        let current = sections[0]?.id ?? '';
-        sections.forEach(s => {
-          if (s.getBoundingClientRect().top <= headerH + 20) current = s.id;
-        });
+        const hb = header ? header.getBoundingClientRect().bottom : 80;
+        let cur = sections[0]?.id ?? '';
+        sections.forEach(s => { if (s.getBoundingClientRect().top <= hb + 20) cur = s.id; });
         links.forEach(a => {
-          const match = a.getAttribute('href') === '#' + current;
-          a.toggleAttribute('aria-current', match);
-          if (match) a.setAttribute('aria-current','page');
+          if (a.getAttribute('href') === '#' + cur) a.setAttribute('aria-current','page');
           else a.removeAttribute('aria-current');
         });
       }
@@ -928,38 +685,38 @@
       update();
     })();
 
-    /* ── Masthead collapse ──
-       Cache the trigger point BEFORE any CSS collapse changes the
-       masthead's dimensions. Compare only window.scrollY so it
-       works reliably in both directions (scroll down AND back up). ── */
+    /* ═══════════════════════════════════════════════════════
+       MASTHEAD COLLAPSE
+       ───────────────────────────────────────────────────────
+       Measure the masthead's natural bottom position once
+       (before any collapse), then toggle is-scrolled purely
+       against window.scrollY. No layout properties change —
+       only transform+opacity — so scroll is always smooth.
+       ═══════════════════════════════════════════════════════ */
     (function(){
-      const masthead = document.getElementById('masthead');
-      const header   = document.querySelector('.site-header');
-      if (!masthead || !header) return;
+      const wrap   = document.getElementById('mastheadWrap');
+      const header = document.querySelector('.site-header');
+      if (!wrap || !header) return;
 
-      // Measure once the page has painted so layout is stable
       let triggerY = 0;
+
       function measure(){
-        // Temporarily remove is-scrolled so masthead is at full height
-        const wasScrolled = document.body.classList.contains('is-scrolled');
+        // Set the margin-top CSS var to the actual rendered header height —
+        // this prevents the logo being cropped behind the header on any screen
+        const liveHdrH = header.getBoundingClientRect().height;
+        document.documentElement.style.setProperty('--hdr-h', liveHdrH + 'px');
+        // Measure with masthead fully expanded (no is-scrolled)
         document.body.classList.remove('is-scrolled');
-        // Bottom of masthead in document coords, minus header height
-        triggerY = masthead.getBoundingClientRect().bottom
-                   + window.scrollY
-                   - header.getBoundingClientRect().height;
-        if (wasScrolled) document.body.classList.add('is-scrolled');
+        triggerY = wrap.offsetTop + wrap.offsetHeight - liveHdrH;
       }
 
       function update(){
         document.body.classList.toggle('is-scrolled', window.scrollY >= triggerY);
       }
 
-      // Measure after fonts/images have loaded so heights are final
-      window.addEventListener('load', () => { measure(); update(); });
+      window.addEventListener('load',   () => { measure(); update(); });
       window.addEventListener('resize', () => { measure(); update(); }, { passive:true });
       window.addEventListener('scroll', update, { passive:true });
-
-      // Also run immediately in case load already fired
       measure();
       update();
     })();
@@ -1019,15 +776,16 @@
       let tP=performance.now(),mouse={x:.5,y:.5},eff={x:.5,y:.5},vel={x:0,y:0},mix=0,tMix=0,paused=false,fadeTimer=null;
 
       function setMouse(cx,cy){const r=canvas.getBoundingClientRect();mouse.x=(cx-r.left)/r.width;mouse.y=1-((cy-r.top)/r.height);}
-      holder.addEventListener('mousemove', e=>{setMouse(e.clientX,e.clientY);});
-      holder.addEventListener('mouseenter',()=>{tMix=1;});
-      holder.addEventListener('mouseleave',()=>{tMix=0;});
+      holder.addEventListener('mousemove', e=>setMouse(e.clientX,e.clientY));
+      holder.addEventListener('mouseenter',()=>{ tMix=1; });
+      holder.addEventListener('mouseleave',()=>{ tMix=0; });
       holder.addEventListener('touchstart', e=>{if(fadeTimer){clearTimeout(fadeTimer);fadeTimer=null;}tMix=1;const t=e.touches[0];setMouse(t.clientX,t.clientY);},{passive:true});
       holder.addEventListener('touchmove',  e=>{const t=e.touches[0];setMouse(t.clientX,t.clientY);},{passive:true});
-      holder.addEventListener('touchend',   ()=>{fadeTimer=setTimeout(()=>{tMix=0;fadeTimer=null;},1200);});
+      holder.addEventListener('touchend',   ()=>{ fadeTimer=setTimeout(()=>{tMix=0;fadeTimer=null;},1200); });
 
+      /* Pause GL when masthead is hidden — saves GPU */
       new MutationObserver(()=>{
-        paused=document.body.classList.contains('is-scrolled');
+        paused = document.body.classList.contains('is-scrolled');
         holder.classList.toggle('gl-active',!paused);
         if(paused){tMix=0;vel.x=vel.y=0;}else resize();
       }).observe(document.body,{attributes:true,attributeFilter:['class']});
@@ -1049,17 +807,17 @@
     })();
 
     /* ═══════════════════════════════════════════════════════
-       CAROUSEL — flat slide, arrows + swipe + dots
+       CAROUSEL
        ═══════════════════════════════════════════════════════ */
     (function(){
-      const viewport = document.querySelector('[data-wheel]');
-      const track    = viewport?.querySelector('[data-track]');
-      const slides   = Array.from(track?.querySelectorAll('.wheel-item')||[]);
-      const prevBtn  = viewport?.querySelector('[data-prev]');
-      const nextBtn  = viewport?.querySelector('[data-next]');
-      const dotEls   = Array.from(document.querySelectorAll('[data-dots] [data-dot]'));
-      if(!viewport||!track||!slides.length) return;
-      const N=slides.length; let cur=0;
+      const viewport=document.querySelector('[data-wheel]');
+      const track   =viewport?.querySelector('[data-track]');
+      const slides  =Array.from(track?.querySelectorAll('.wheel-item')||[]);
+      const prevBtn =viewport?.querySelector('[data-prev]');
+      const nextBtn =viewport?.querySelector('[data-next]');
+      const dotEls  =Array.from(document.querySelectorAll('[data-dots] [data-dot]'));
+      if(!viewport||!track||!slides.length)return;
+      const N=slides.length;let cur=0;
 
       function goTo(idx){
         cur=((idx%N)+N)%N;
@@ -1070,7 +828,10 @@
       nextBtn?.addEventListener('click',()=>goTo(cur+1));
       dotEls.forEach(d=>d.addEventListener('click',()=>goTo(parseInt(d.dataset.dot,10))));
       viewport.setAttribute('tabindex','0');
-      viewport.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'){e.preventDefault();goTo(cur-1);}if(e.key==='ArrowRight'){e.preventDefault();goTo(cur+1);}});
+      viewport.addEventListener('keydown',e=>{
+        if(e.key==='ArrowLeft'){e.preventDefault();goTo(cur-1);}
+        if(e.key==='ArrowRight'){e.preventDefault();goTo(cur+1);}
+      });
 
       let sX=0,sY=0,drag=false,axis=null,off=0;
       function onStart(x,y){sX=x;sY=y;drag=true;axis=null;off=0;track.classList.add('is-dragging');}
@@ -1084,16 +845,15 @@
         const th=viewport.clientWidth*.2;
         if(off<-th)goTo(cur+1);else if(off>th)goTo(cur-1);else goTo(cur);
       }
-      viewport.addEventListener('mousedown', e=>{e.preventDefault();onStart(e.clientX,e.clientY);});
-      window.addEventListener ('mousemove',  e=>onMove(e.clientX,e.clientY));
-      window.addEventListener ('mouseup',    ()=>onEnd());
+      viewport.addEventListener('mousedown',e=>{e.preventDefault();onStart(e.clientX,e.clientY);});
+      window.addEventListener ('mousemove', e=>onMove(e.clientX,e.clientY));
+      window.addEventListener ('mouseup',   ()=>onEnd());
       viewport.addEventListener('touchstart',e=>onStart(e.touches[0].clientX,e.touches[0].clientY),{passive:true});
       viewport.addEventListener('touchmove', e=>{onMove(e.touches[0].clientX,e.touches[0].clientY);if(axis==='x')e.preventDefault();},{passive:false});
       viewport.addEventListener('touchend',  ()=>onEnd());
       viewport.addEventListener('click',e=>{if(Math.abs(off)>8)e.preventDefault();},{capture:true});
 
-      /* Tilt — desktop with hover only */
-      if(!window.matchMedia('(prefers-reduced-motion:reduce)').matches && !window.matchMedia('(hover:none)').matches){
+      if(!window.matchMedia('(prefers-reduced-motion:reduce)').matches&&!window.matchMedia('(hover:none)').matches){
         const MAX=7;let active=null;
         const find=el=>el?.closest?.('.wheel-card')??null;
         const tilt=(c,e)=>{const r=c.getBoundingClientRect();if(!r.width)return;c.style.setProperty('--tiltY',(((e.clientX-r.left)/r.width-.5)*MAX).toFixed(2)+'deg');c.style.setProperty('--tiltX',(((e.clientY-r.top)/r.height-.5)*-MAX).toFixed(2)+'deg');};
@@ -1106,11 +866,11 @@
     })();
 
     /* ═══════════════════════════════════════════════════════
-       TILT CARDS — for portfolio grids (artworks, game, graphic)
+       TILT CARDS
        ═══════════════════════════════════════════════════════ */
     (function(){
-      if(window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
-      if(window.matchMedia('(hover:none)').matches) return;
+      if(window.matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+      if(window.matchMedia('(hover:none)').matches)return;
       const MAX=6;
       document.querySelectorAll('.card.project.tilt-card').forEach(el=>{
         el.addEventListener('mouseenter',()=>el.classList.add('is-hovering'));
@@ -1133,48 +893,34 @@
        ARTWORK LIGHTBOX
        ═══════════════════════════════════════════════════════ */
     (function(){
-      const lb      = document.getElementById('art-lightbox');
-      const lbImg   = document.getElementById('lbImg');
-      const lbTitle = document.getElementById('lbTitle');
-      const lbTags  = document.getElementById('lbTags');
-      const lbDesc  = document.getElementById('lbDesc');
-      const lbClose = document.getElementById('lbClose');
-      if (!lb) return;
+      const lb=document.getElementById('art-lightbox');
+      const lbImg=document.getElementById('lbImg');
+      const lbTitle=document.getElementById('lbTitle');
+      const lbTags=document.getElementById('lbTags');
+      const lbDesc=document.getElementById('lbDesc');
+      const lbClose=document.getElementById('lbClose');
+      if(!lb)return;
 
-      function open(btn) {
-        lbImg.src        = btn.dataset.full || btn.dataset.img;
-        lbImg.alt        = btn.dataset.title || '';
-        lbTitle.textContent = btn.dataset.title || '';
-        lbTags.textContent  = btn.dataset.tags  || '';
-        lbDesc.textContent  = btn.dataset.desc  || '';
-        lb.hidden = false;
-        // Trigger opacity transition on next frame
-        requestAnimationFrame(() => lb.classList.add('is-open'));
-        document.body.style.overflow = 'hidden';
+      function open(btn){
+        lbImg.src=btn.dataset.full||btn.dataset.img;
+        lbImg.alt=btn.dataset.title||'';
+        lbTitle.textContent=btn.dataset.title||'';
+        lbTags.textContent=btn.dataset.tags||'';
+        lbDesc.textContent=btn.dataset.desc||'';
+        lb.hidden=false;
+        requestAnimationFrame(()=>lb.classList.add('is-open'));
+        document.body.style.overflow='hidden';
         lbClose.focus();
       }
-
-      function close() {
+      function close(){
         lb.classList.remove('is-open');
-        lb.addEventListener('transitionend', () => {
-          lb.hidden = true;
-          document.body.style.overflow = '';
-        }, { once: true });
+        lb.addEventListener('transitionend',()=>{lb.hidden=true;document.body.style.overflow='';},{once:true});
       }
-
-      // Open on thumbnail click
-      document.querySelectorAll('.art-thumb:not(.art-thumb--empty)').forEach(btn => {
-        btn.addEventListener('click', () => open(btn));
-      });
-
-      // Close on button, backdrop click, or Escape
-      lbClose.addEventListener('click', close);
-      lb.addEventListener('click', e => { if (e.target === lb) close(); });
-      document.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && !lb.hidden) close();
-      });
+      document.querySelectorAll('.art-thumb:not(.art-thumb--empty)').forEach(btn=>btn.addEventListener('click',()=>open(btn)));
+      lbClose.addEventListener('click',close);
+      lb.addEventListener('click',e=>{if(e.target===lb)close();});
+      document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!lb.hidden)close();});
     })();
-
   </script>
 </body>
 </html>
