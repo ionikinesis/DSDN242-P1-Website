@@ -311,6 +311,42 @@
     .art-lightbox__desc  { font-size:.97rem; color:var(--text-200); line-height:1.7; margin:0; }
 
     .bg-blur { pointer-events:none; z-index:1; }
+
+    /* ═══════════════════════════
+       NEW BUTTON: IT HUNGERS
+       ═══════════════════════════ */
+    .hunger-container {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      z-index: 999;
+      pointer-events: none; /* Let clicks pass through around the button */
+    }
+    .btn-hunger {
+      pointer-events: auto;
+      display: inline-block;
+      padding: 0.75rem 2rem;
+      border-radius: 50px;
+      font-weight: 700;
+      text-transform: lowercase;
+      letter-spacing: 1px;
+      background: #2a0a0a;
+      color: #ff4d4d;
+      border: 1px solid #ff4d4d;
+      text-decoration: none;
+      box-shadow: 0 0 15px rgba(255, 77, 77, 0.2);
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+    .btn-hunger:hover {
+      background: #ff4d4d;
+      color: #000;
+      box-shadow: 0 0 25px rgba(255, 77, 77, 0.6);
+      transform: translateY(-2px);
+    }
   </style>
 </head>
 <body>
@@ -922,5 +958,13 @@
       document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!lb.hidden)close();});
     })();
   </script>
+
+  <!-- ═══════════════════════════
+       NEW BUTTON: IT HUNGERS
+       ═══════════════════════════ -->
+  <div class="hunger-container">
+    <a href="familiar.html" class="btn-hunger">it hungers</a>
+  </div>
+
 </body>
 </html>
