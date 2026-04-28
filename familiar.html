@@ -1,0 +1,1045 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Shepherd's Bargain</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    background: #000;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; font-family: 'Georgia', serif;
+  }
+  #canvas-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  canvas { 
+    display: block;
+    image-rendering: auto;
+    max-width: 100vw;
+    max-height: 100vh;
+    object-fit: contain;
+  }
+  #debug-panel {
+    position: fixed; top: 10px; right: 10px;
+    background: rgba(0,0,0,0.88); border: 1px solid #444; color: #aaa;
+    font-family: monospace; font-size: 11px; padding: 10px 14px;
+    border-radius: 6px; z-index: 100; min-width: 190px;
+  }
+  #debug-panel h4 { color: #ff9944; margin-bottom: 6px; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+  #debug-panel button {
+    display: block; width: 100%; margin: 2px 0;
+    background: #1a1a1a; color: #ccc; border: 1px solid #333;
+    padding: 3px 8px; cursor: pointer; font-size: 10px; border-radius: 3px; text-align: left;
+  }
+  #debug-panel button:hover { background: #2a2a2a; color: #fff; }
+  #debug-panel .stat { color: #88ccff; margin: 1px 0; }
+  #debug-panel .sep { border-top: 1px solid #333; margin: 4px 0; }
+</style>
+</head>
+<body>
+<div id="canvas-wrap"></div>
+
+<div id="debug-panel">
+  <h4>⚙ Debug</h4>
+  <button onclick="sketch.setTime('day')">→ Force Day</button>
+  <button onclick="sketch.setTime('night')">→ Force Night</button>
+  <button onclick="sketch.advanceDay()">→ Advance Day Cycle</button>
+  <div class="sep"></div>
+  <button onclick="sketch.addFavor(20)">→ +20 Favor</button>
+  <button onclick="sketch.addFavor(-20)">→ -20 Favor</button>
+  <button onclick="sketch.addFavor(-50)">→ -50 Favor (danger)</button>
+  <div class="sep"></div>
+  <button onclick="sketch.addLivestock(10)">→ +10 Livestock</button>
+  <button onclick="sketch.addCrystals(20)">→ +20 Crystals</button>
+  <button onclick="sketch.addMoney(100)">→ +100 Gold</button>
+  <div class="sep"></div>
+  <button onclick="sketch.triggerDeath()">→ Trigger Death</button>
+  <div class="sep"></div>
+  <button onclick="localStorage.clear(); location.href = location.href;" style="color:#ff6666;">→ Clear Save Data</button>
+  <div id="debug-stats" style="margin-top:6px; border-top:1px solid #333; padding-top:5px;"></div>
+</div>
+
+<script>
+let sketch;
+const BASE_W = 2560;
+const BASE_H = 1440;
+const BTN_REGISTRY = {};
+
+new p5(function(p) {
+  sketch = p;
+
+  const IMAGES = {
+    hills:  { day: null, night: null },
+    clouds: { day: null, night: null },
+    farm:   { 1: null, 2: null, 3: null },
+    temple: { 1: null, 2: null, 3: null },
+    goblin: null,
+    god:    { mad: null, neutral: null, satisfied: null },
+  };
+
+  p.preload = function() {
+    IMAGES.hills.day    = p.loadImage('assets/Hills day.png');
+    IMAGES.hills.night  = p.loadImage('assets/Hills night.png');
+    IMAGES.clouds.day   = p.loadImage('assets/Clouds day.png');
+    IMAGES.clouds.night = p.loadImage('assets/Clouds night.png');
+    IMAGES.farm[1]      = p.loadImage('assets/Farm lvl 1.PNG');
+    IMAGES.farm[2]      = p.loadImage('assets/Farm lvl 2.PNG');
+    IMAGES.farm[3]      = p.loadImage('assets/Farm lvl 3.PNG');
+    IMAGES.temple[1]    = p.loadImage('assets/Temple lvl 1.PNG');
+    IMAGES.temple[2]    = p.loadImage('assets/Temple lvl 2.PNG');
+    IMAGES.temple[3]    = p.loadImage('assets/Temple lvl 3.PNG');
+    IMAGES.goblin       = p.loadImage('assets/Goblin.PNG');
+    IMAGES.god.mad       = p.loadImage('assets/God mad.png');
+    IMAGES.god.neutral   = p.loadImage('assets/God neutral.png');
+    IMAGES.god.satisfied = p.loadImage('assets/God satisfied.png');
+  };
+
+  const FARM_COSTS   = { 1: 0,  2: 60,  3: 200 };
+  const TEMPLE_COSTS = { 1: 80, 2: 200, 3: 500 };
+  const REPAIR_COST  = (lv) => Math.floor(lv * 15);
+  const FARM_CAP     = { 0: 3,  1: 5,   2: 15,  3: 30  };
+  const FARM_RATE    = { 0: 300,1: 200, 2: 130, 3: 70  };
+  const TEMPLE_FAVOR = { 0: 0,  1: 0, 2: 0, 3: 0 };
+  const OFFER_DEMAND = (f) => f < 34 ? 1 : f < 67 ? 2 : 3;
+
+  const FARM_ANCHORS = [
+    { rx: 0.13, ry: 0.78 },
+    { rx: 0.21, ry: 0.78 },
+    { rx: 0.29, ry: 0.78 },
+  ];
+  const FARM_SIZES = [
+    { w: 240, h: 240 },
+    { w: 270, h: 270 },
+    { w: 230, h: 230 },
+  ];
+
+  const TEMPLE_ANCHOR = { rx: 0.76, ry: 0.78 };
+  const TEMPLE_SIZE   = { w: 270, h: 270 };
+  
+  const GOBLIN_ANCHOR = { rx: 0.84, ry: 0.94 };
+  const GOBLIN_SIZE   = { w: 520, h: 520 };
+  const GOBLIN_HITBOX = { x: BASE_W * 0.84, y: BASE_H * 0.82, w: 560, h: 600 };
+
+  const ALTAR = { x: BASE_W * 0.5, y: BASE_H * 0.78, w: 280, h: 120 };
+  const SACRIFICE_BTN = { x: BASE_W * 0.46, y: BASE_H * 0.88, w: 200, h: 70 };
+  const COMPLETE_BTN  = { x: BASE_W * 0.54, y: BASE_H * 0.88, w: 200, h: 70 };
+
+  const MERCHANT_WINDOW = {
+    x: BASE_W * 0.35,
+    y: BASE_H * 0.55,
+    w: BASE_W * 0.45,
+    h: BASE_H * 0.38,
+    open: false,
+    fade: 0,
+  };
+
+  const STATE = {
+    screen: 'game', screenTimer: 0,
+    useRealTime: true, debugHour: 10,
+    isNight: false, prevIsNight: false,
+    skyTransition: 0, dayCount: 1,
+    favor: 25, favorDisplay: 25, favorColor: 0,
+    livestock: 6, crystals: 0, money: 0,
+    farmLevel: 1, farmDamage: 0,
+    farmUnderConstruction: false, farmConstructTarget: 1,
+    cultivationTimer: 0,
+    templeLevel: 0, templeDamage: 0,
+    templeUnderConstruction: false, templeConstructTarget: 1,
+    offeringsMadeThisNight: 0, offeringsRequired: 1,
+    offerCooldown: 0, nightSatisfied: false, missedNights: 0,
+    godAlpha: 0, godScale: 0, godPulse: 0,
+    totalSacrificed: 0,
+    punishQueue: [], particles: [], starField: [],
+    sheep: [],
+    draggedSheep: null,
+    sheepOnAltar: [],
+    sacrificeBtnHover: false,
+    sacrificeBtnPressed: false,
+    completeBtnHover: false,
+    nightCompleted: false,
+    godDismissed: false,
+    goblinHover: false,
+    btnPressed: null,
+  };
+
+  const C = {
+    skyDayTop:    [135, 206, 235],
+    skyDayBottom: [180, 220, 240],
+    skyNightTop:  [4, 2, 14],
+    skyNightBot:  [15, 10, 30],
+    groundBack:   [90, 130, 95],
+    groundFront:  [76, 120, 55],
+    groundNight:  [26, 18, 12],
+    star:     [220, 210, 255],
+    crystal:  [130, 200, 255],
+    gold:     [255, 200, 60],
+    farmOk:   [90, 160, 70],
+    red:      [220, 60, 50],
+    orange:   [230, 140, 40],
+    green:    [80, 220, 130],
+    purple:   [150, 80, 220],
+    altar:    [100, 100, 110],
+    altarGlow:[180, 50, 50],
+    windowBg: [30, 25, 20],
+    windowBorder: [140, 120, 80],
+  };
+
+  // ── SAVE / LOAD ─────────────────────────────────────────────────────────────
+  const SAVE_KEY = 'shepherds_bargain_save';
+  const SAVE_FIELDS = [
+    'screen', 'dayCount',
+    'favor', 'livestock', 'crystals', 'money',
+    'farmLevel', 'farmDamage', 'farmUnderConstruction', 'farmConstructTarget',
+    'templeLevel', 'templeDamage', 'templeUnderConstruction', 'templeConstructTarget',
+    'missedNights', 'totalSacrificed',
+    'offeringsMadeThisNight', 'offeringsRequired', 'nightSatisfied',
+  ];
+
+  p.setup = function() {
+    let cnv = p.createCanvas(BASE_W, BASE_H);
+    cnv.parent('canvas-wrap');
+    p.pixelDensity(1);
+    fitCanvas();
+    p.textFont('Georgia');
+    buildStarField();
+    loadGame();       // restore saved state before initialising sheep
+    initSheep();
+    p.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+    // Safety-net save whenever the tab/window closes
+    window.addEventListener('beforeunload', () => saveGame());
+  };
+
+  function saveGame() {
+    if (STATE.screen === 'game' || STATE.screen === 'dead' || STATE.screen === 'win') {
+      let data = {};
+      for (let k of SAVE_FIELDS) data[k] = STATE[k];
+      try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+      } catch(e) { /* storage full or unavailable — silently skip */ }
+    }
+  }
+
+  function loadGame() {
+    try {
+      let raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return;
+      let data = JSON.parse(raw);
+      for (let k of SAVE_FIELDS) {
+        if (data[k] !== undefined) STATE[k] = data[k];
+      }
+      // Clamp values in case of corrupt data
+      STATE.favor      = p.constrain(STATE.favor,      0, 100);
+      STATE.livestock  = Math.max(0, STATE.livestock);
+      STATE.crystals   = Math.max(0, STATE.crystals);
+      STATE.money      = Math.max(0, STATE.money);
+      STATE.farmLevel  = p.constrain(STATE.farmLevel,  0, 3);
+      STATE.templeLevel= p.constrain(STATE.templeLevel,0, 3);
+      STATE.dayCount   = Math.max(1, STATE.dayCount);
+      // transient render state stays at defaults (godAlpha, sheep, etc.)
+      STATE.favorDisplay = STATE.favor;
+    } catch(e) {
+      // Corrupt save — start fresh
+      localStorage.removeItem(SAVE_KEY);
+    }
+  }
+
+  function fitCanvas() {
+    let wrap = document.getElementById('canvas-wrap');
+    let cvs = p.canvas;
+    let scaleX = window.innerWidth / BASE_W;
+    let scaleY = window.innerHeight / BASE_H;
+    let scale = Math.min(scaleX, scaleY);
+    cvs.style.width = (BASE_W * scale) + 'px';
+    cvs.style.height = (BASE_H * scale) + 'px';
+    wrap.style.width = (BASE_W * scale) + 'px';
+    wrap.style.height = (BASE_H * scale) + 'px';
+  }
+  
+  p.windowResized = function() { 
+    fitCanvas(); 
+    buildStarField(); 
+  };
+
+  const W = (rx) => rx * BASE_W;
+  const H = (ry) => ry * BASE_H;
+
+  function initSheep() {
+    STATE.sheep = [];
+    for (let i = 0; i < STATE.livestock; i++) {
+      STATE.sheep.push(createSheep(i));
+    }
+  }
+
+  function createSheep(index) {
+    return {
+      id: index,
+      x: p.random(BASE_W * 0.35, BASE_W * 0.65),
+      y: p.random(BASE_H * 0.82, BASE_H * 0.92),
+      vx: p.random(-0.3, 0.3),
+      vy: p.random(-0.2, 0.2),
+      size: p.random(28, 38),
+      onAltar: false,
+      beingDragged: false,
+      wanderPhase: p.random(p.TWO_PI),
+    };
+  }
+
+  function updateSheep() {
+    if (STATE.isNight) return;
+    for (let sheep of STATE.sheep) {
+      if (sheep.beingDragged || sheep.onAltar) continue;
+      sheep.wanderPhase += 0.01;
+      sheep.x += Math.cos(sheep.wanderPhase) * 0.5 + sheep.vx;
+      sheep.y += Math.sin(sheep.wanderPhase) * 0.3 + sheep.vy;
+      sheep.x = p.constrain(sheep.x, BASE_W * 0.30, BASE_W * 0.70);
+      sheep.y = p.constrain(sheep.y, BASE_H * 0.80, BASE_H * 0.94);
+    }
+  }
+
+  function drawSheep() {
+    p.textSize(28);
+    p.textAlign(p.CENTER);
+    for (let sheep of STATE.sheep) {
+      if (sheep.onAltar) continue;
+      let displayX = sheep.beingDragged ? p.mouseX : sheep.x;
+      let displayY = sheep.beingDragged ? p.mouseY : sheep.y;
+      let bob = Math.sin(p.frameCount * 0.08 + sheep.id) * 3;
+      
+      p.fill(255, 255, 255);
+      p.text('🐑', displayX, displayY + bob);
+      
+      if (sheep.beingDragged) {
+        p.noFill();
+        p.stroke(255, 255, 255, 180);
+        p.strokeWeight(3);
+        p.ellipse(displayX, displayY + bob, sheep.size * 1.3, sheep.size * 1.1);
+        p.noStroke();
+      }
+    }
+  }
+
+  function handleSheepInput() {
+    if (!STATE.isNight || STATE.nightCompleted) return;
+    if (p.mouseIsPressed && !STATE.draggedSheep && !MERCHANT_WINDOW.open) {
+      for (let sheep of STATE.sheep) {
+        if (!sheep.onAltar && !sheep.beingDragged) {
+          let d = p.dist(p.mouseX, p.mouseY, sheep.x, sheep.y);
+          if (d < sheep.size) {
+            STATE.draggedSheep = sheep;
+            sheep.beingDragged = true;
+            break;
+          }
+        }
+      }
+    }
+    if (!p.mouseIsPressed && STATE.draggedSheep) {
+      let sheep = STATE.draggedSheep;
+      sheep.beingDragged = false;
+      let onAltar = p.mouseX > ALTAR.x - ALTAR.w/2 && 
+                    p.mouseX < ALTAR.x + ALTAR.w/2 &&
+                    p.mouseY > ALTAR.y - ALTAR.h/2 && 
+                    p.mouseY < ALTAR.y + ALTAR.h/2;
+      if (onAltar && STATE.sheepOnAltar.length < 6) {
+        sheep.onAltar = true;
+        let slot = STATE.sheepOnAltar.length;
+        sheep.x = ALTAR.x - 60 + (slot % 3) * 60;
+        sheep.y = ALTAR.y - 20 + Math.floor(slot / 3) * 50;
+        STATE.sheepOnAltar.push(sheep);
+      } else {
+        sheep.x = p.random(BASE_W * 0.35, BASE_W * 0.65);
+        sheep.y = p.random(BASE_H * 0.82, BASE_H * 0.92);
+      }
+      STATE.draggedSheep = null;
+    }
+  }
+
+  let _mouseWasPressed = false;
+  let _justClicked = false;
+
+  function updateGoblin() {
+    _justClicked = (!p.mouseIsPressed && _mouseWasPressed);
+    _mouseWasPressed = p.mouseIsPressed;
+
+    if (STATE.isNight) {
+      MERCHANT_WINDOW.open = false;
+      MERCHANT_WINDOW.fade = 0;
+      _mouseWasPressed = false;
+      _justClicked = false;
+      return;
+    }
+    
+    let gx = W(GOBLIN_ANCHOR.rx), gy = H(GOBLIN_ANCHOR.ry);
+    let d = p.dist(p.mouseX, p.mouseY, gx, gy);
+    STATE.goblinHover = d < 300;
+    
+    if (_justClicked) {
+      if (STATE.goblinHover && !MERCHANT_WINDOW.open) {
+        MERCHANT_WINDOW.open = true;
+      } else if (MERCHANT_WINDOW.open) {
+        let mx = p.mouseX, my = p.mouseY;
+        let wx = MERCHANT_WINDOW.x, wy = MERCHANT_WINDOW.y;
+        let ww = MERCHANT_WINDOW.w, wh = MERCHANT_WINDOW.h;
+        if (mx < wx || mx > wx + ww || my < wy || my > wy + wh) {
+          MERCHANT_WINDOW.open = false;
+        }
+      }
+    }
+    
+    let targetFade = MERCHANT_WINDOW.open ? 255 : 0;
+    MERCHANT_WINDOW.fade = p.lerp(MERCHANT_WINDOW.fade, targetFade, 0.15);
+  }
+
+  function drawGoblin() {
+    if (STATE.isNight) return;
+    let X = W(GOBLIN_ANCHOR.rx), Y = H(GOBLIN_ANCHOR.ry), sz = GOBLIN_SIZE;
+    let bob = Math.sin(p.frameCount * 0.04) * 5;
+    
+    if (IMAGES.goblin) {
+      p.imageMode(p.CENTER);
+      let imgAspect = IMAGES.goblin.width / IMAGES.goblin.height;
+      let drawW = sz.w, drawH = sz.w / imgAspect;
+      
+      if (STATE.goblinHover) {
+        let pulse = 0.5 + 0.5 * Math.sin(p.frameCount * 0.06);
+        p.drawingContext.shadowBlur = 45 + 35 * pulse;
+        p.drawingContext.shadowColor = 'rgba(255, 230, 100, 0.85)';
+        p.drawingContext.shadowOffsetX = 0;
+        p.drawingContext.shadowOffsetY = 0;
+      }
+      
+      p.image(IMAGES.goblin, X, Y - drawH/2 + bob, drawW, drawH);
+      p.drawingContext.shadowBlur = 0;
+      p.drawingContext.shadowColor = 'rgba(0,0,0,0)';
+      p.imageMode(p.CORNER);
+    }
+    
+    p.fill(140, 210, 100, 185); p.textSize(22); p.textAlign(p.CENTER);
+    p.text('GOBLIN', X, Y + sz.h/2 + 35);
+    p.text('MERCHANT', X, Y + sz.h/2 + 60);
+    
+    if (STATE.goblinHover && MERCHANT_WINDOW.fade < 50) {
+      p.fill(255, 230, 100, 220); p.textSize(18);
+      p.text('Click to trade', X, Y + sz.h/2 + 90);
+    }
+  }
+
+  function drawMerchantBtn(x, y, w, h, label, enabled, col, id, fade) {
+    BTN_REGISTRY[id] = { x, y, w, h, enabled };
+    let hover = p.mouseX > x && p.mouseX < x + w && p.mouseY > y && p.mouseY < y + h;
+    let pressed = (STATE.btnPressed === id && p.mouseIsPressed && hover);
+    
+    p.noStroke();
+    if (enabled) {
+      if (pressed) p.fill(col[0] * 0.3, col[1] * 0.3, col[2] * 0.3, fade * 0.9);
+      else if (hover) p.fill(col[0] * 0.7, col[1] * 0.7, col[2] * 0.7, fade * 0.9);
+      else p.fill(col[0] * 0.5, col[1] * 0.5, col[2] * 0.5, fade * 0.8);
+      p.rect(x, y, w, h, 8);
+      p.stroke(col[0], col[1], col[2], fade * 0.7);
+      p.strokeWeight(2);
+      p.rect(x, y, w, h, 8);
+      p.noStroke();
+      p.fill(255, 255, 255, fade);
+    } else {
+      p.fill(60, 60, 60, fade * 0.6);
+      p.rect(x, y, w, h, 8);
+      p.fill(120, 120, 120, fade * 0.8);
+    }
+    p.textSize(13); p.textAlign(p.CENTER);
+    p.text(label, x + w/2, y + h/2 + 5);
+    
+    if (enabled && hover && p.mouseIsPressed && STATE.btnPressed === null) STATE.btnPressed = id;
+    if (!p.mouseIsPressed) STATE.btnPressed = null;
+  }
+
+  function drawMerchantWindow() {
+    if (MERCHANT_WINDOW.fade < 10) return;
+    let x = MERCHANT_WINDOW.x, y = MERCHANT_WINDOW.y, w = MERCHANT_WINDOW.w, h = MERCHANT_WINDOW.h;
+    let fade = MERCHANT_WINDOW.fade;
+    
+    p.noStroke();
+    p.fill(C.windowBg[0], C.windowBg[1], C.windowBg[2], fade * 0.95);
+    p.rect(x, y, w, h, 15);
+    p.stroke(C.windowBorder[0], C.windowBorder[1], C.windowBorder[2], fade);
+    p.strokeWeight(4); p.noFill(); p.rect(x, y, w, h, 15); p.noStroke();
+    
+    p.fill(255, 220, 100, fade); p.textSize(24); p.textAlign(p.CENTER);
+    p.text('— MERCHANT —', x + w/2, y + 40);
+    
+    p.fill(200, 180, 140, fade); p.textSize(16); p.textAlign(p.LEFT);
+    p.text('💎 Crystals: ' + STATE.crystals, x + 50, y + 80);
+    p.text('🪙 Gold: ' + STATE.money, x + 50, y + 110);
+    p.fill(160, 200, 130, fade);
+    p.text('🐑 Livestock: ' + STATE.livestock, x + 50, y + 140);
+    
+    p.fill(130, 200, 255, fade); p.textSize(18); p.textAlign(p.LEFT);
+    p.text('SELL CRYSTALS', x + 50, y + 190);
+    p.fill(200, 180, 140, fade); p.textSize(14);
+    p.text('1 💎 = 4 🪙', x + 50, y + 215);
+    
+    let sellBtnW = 200, sellBtnH = 45;
+    let sellBtnX = x + w - sellBtnW - 50, sellBtnY = y + 190;
+    drawMerchantBtn(sellBtnX, sellBtnY, sellBtnW, sellBtnH, 'Sell All 💎', STATE.crystals > 0, C.crystal, 'sell', fade);
+    
+    p.fill(90, 160, 70, fade); p.textSize(18); p.textAlign(p.LEFT);
+    p.text('FARM (Lv ' + STATE.farmLevel + '/3)', x + 50, y + 270);
+    p.fill(200, 180, 140, fade); p.textSize(14);
+    p.text('Capacity: ' + FARM_CAP[STATE.farmLevel] + ' sheep', x + 50, y + 295);
+    
+    let farmBtnW = (w - 120) / 2, farmBtnH = 45, farmBtnX = x + 50, farmBtnY = y + 305;
+    if (STATE.farmLevel < 3) {
+      let nextCost = FARM_COSTS[STATE.farmLevel + 1];
+      drawMerchantBtn(farmBtnX, farmBtnY, farmBtnW, farmBtnH, 'Upgrade 🪙' + nextCost, STATE.money >= nextCost, C.farmOk, 'upgfarm', fade);
+    }
+    if (STATE.farmDamage > 0) {
+      let repairCost = REPAIR_COST(STATE.farmLevel);
+      drawMerchantBtn(farmBtnX + farmBtnW + 20, farmBtnY, farmBtnW, farmBtnH, 'Repair 🪙' + repairCost, STATE.money >= repairCost, C.red, 'repairfarm', fade);
+    }
+    
+    p.fill(150, 80, 220, fade); p.textSize(18); p.textAlign(p.LEFT);
+    p.text('TEMPLE (Lv ' + STATE.templeLevel + '/3)', x + 50, y + 375);
+    p.fill(200, 180, 140, fade); p.textSize(14);
+    p.text('Favor: +' + ((TEMPLE_FAVOR[STATE.templeLevel] * 1000 | 0) / 10) + '%/s', x + 50, y + 400);
+    
+    let templeBtnY = y + 410;
+    if (STATE.templeLevel < 3) {
+      let nextCost = TEMPLE_COSTS[STATE.templeLevel + 1];
+      drawMerchantBtn(farmBtnX, templeBtnY, farmBtnW, farmBtnH, 'Upgrade 🪙' + nextCost, STATE.money >= nextCost, C.purple, 'upgtemple', fade);
+    }
+    if (STATE.templeDamage > 0) {
+      let repairCost = REPAIR_COST(STATE.templeLevel);
+      drawMerchantBtn(farmBtnX + farmBtnW + 20, templeBtnY, farmBtnW, farmBtnH, 'Repair 🪙' + repairCost, STATE.money >= repairCost, C.red, 'repairtemple', fade);
+    }
+    
+    let closeBtnX = x + w - 150, closeBtnY = y + h - 60;
+    let closeBtnW = 100, closeBtnH = 35;
+    let closeHover = p.mouseX > closeBtnX && p.mouseX < closeBtnX + closeBtnW && p.mouseY > closeBtnY && p.mouseY < closeBtnY + closeBtnH;
+    if (closeHover && p.mouseIsPressed) p.fill(140, 40, 40, fade * 0.9);
+    else if (closeHover) p.fill(200, 70, 70, fade * 0.9);
+    else p.fill(180, 60, 60, fade * 0.8);
+    p.rect(closeBtnX, closeBtnY, closeBtnW, closeBtnH, 8);
+    p.fill(255, 255, 255, fade); p.textSize(14); p.textAlign(p.CENTER);
+    p.text('Close', closeBtnX + closeBtnW/2, closeBtnY + closeBtnH/2 + 4);
+    if (closeHover && _justClicked) MERCHANT_WINDOW.open = false;
+  }
+
+  function handleMerchantInput() {
+    if (!MERCHANT_WINDOW.open || MERCHANT_WINDOW.fade < 100) return;
+    for (let [id, btn] of Object.entries(BTN_REGISTRY)) {
+      if (!btn.enabled) continue;
+      if (p.mouseX > btn.x && p.mouseX < btn.x + btn.w && p.mouseY > btn.y && p.mouseY < btn.y + btn.h) {
+        if (_justClicked) {
+          if (id === 'sell') sellCrystals();
+          if (id === 'upgfarm') startFarmUpgrade();
+          if (id === 'repairfarm') startFarmRepair();
+          if (id === 'upgtemple') startTempleUpgrade();
+          if (id === 'repairtemple') startTempleRepair();
+        }
+        break;
+      }
+    }
+  }
+
+  function sellCrystals() { if (!STATE.crystals) return; STATE.money += STATE.crystals * 4; spawnParticle(W(0.5), H(0.5), C.gold, '🪙'); STATE.crystals = 0; saveGame(); }
+  function startFarmUpgrade() { let n = STATE.farmLevel + 1; if (n > 3 || STATE.farmUnderConstruction || STATE.money < FARM_COSTS[n]) return; STATE.money -= FARM_COSTS[n]; STATE.farmUnderConstruction = true; STATE.farmConstructTarget = n; spawnParticle(W(0.18), H(0.65), C.gold, '🔨'); saveGame(); }
+  function startFarmRepair() { if (!STATE.farmDamage || STATE.farmUnderConstruction || STATE.money < REPAIR_COST(STATE.farmLevel)) return; STATE.money -= REPAIR_COST(STATE.farmLevel); STATE.farmUnderConstruction = true; STATE.farmConstructTarget = STATE.farmLevel; spawnParticle(W(0.18), H(0.65), C.farmOk, '🔧'); saveGame(); }
+  function startTempleUpgrade() { let n = STATE.templeLevel + 1; if (n > 3 || STATE.templeUnderConstruction || STATE.money < TEMPLE_COSTS[n]) return; STATE.money -= TEMPLE_COSTS[n]; STATE.templeUnderConstruction = true; STATE.templeConstructTarget = n; spawnParticle(W(TEMPLE_ANCHOR.rx), H(0.65), C.purple, '🔨'); saveGame(); }
+  function startTempleRepair() { if (!STATE.templeDamage || STATE.templeUnderConstruction || STATE.money < REPAIR_COST(STATE.templeLevel)) return; STATE.money -= REPAIR_COST(STATE.templeLevel); STATE.templeUnderConstruction = true; STATE.templeConstructTarget = STATE.templeLevel; spawnParticle(W(TEMPLE_ANCHOR.rx), H(0.65), C.purple, '🔧'); saveGame(); }
+
+  function drawAltar() {
+    if (!STATE.isNight || STATE.godAlpha < 50 || STATE.nightCompleted) return;
+    let t = STATE.godAlpha / 255;
+    let x = ALTAR.x, y = ALTAR.y, w = ALTAR.w, h = ALTAR.h;
+    p.noStroke();
+    for (let i = 5; i >= 0; i--) {
+      let glowSize = 1 + i * 0.3;
+      p.fill(C.altarGlow[0], C.altarGlow[1], C.altarGlow[2], t * 30 * (1 - i * 0.15));
+      p.ellipse(x, y, w * glowSize, h * glowSize);
+    }
+    p.fill(C.altar[0] * 0.7, C.altar[1] * 0.7, C.altar[2] * 0.7, t * 200);
+    p.rect(x - w/2 - 10, y - h/2 + 20, w + 20, h - 20, 8);
+    p.fill(C.altar[0], C.altar[1], C.altar[2], t * 220);
+    p.rect(x - w/2, y - h/2, w, h/2, 5);
+    p.stroke(C.altar[0] * 0.5, C.altar[1] * 0.5, C.altar[2] * 0.5, t * 150); p.strokeWeight(2);
+    for (let i = 0; i < 4; i++) { let lx = x - w/2 + 20 + i * (w/4); p.line(lx, y - h/2 + 10, lx, y - h/2 + h/2 - 10); }
+    p.line(x - w/2 + 10, y - h/2 + h/4, x + w/2 - 10, y - h/2 + h/4); p.noStroke();
+    p.fill(200, 200, 200, t * 200); p.textSize(14); p.textAlign(p.CENTER);
+    p.text('SACRIFICE ALTAR', x, y + h/2 + 25);
+    p.fill(100, 100, 100, t * 150); p.textSize(12); p.text(STATE.sheepOnAltar.length + '/6 sheep', x, y + h/2 + 42);
+  }
+
+  function drawSheepOnAltar() {
+    if (!STATE.isNight) return;
+    p.textSize(28); p.textAlign(p.CENTER);
+    for (let sheep of STATE.sheepOnAltar) {
+      let bob = Math.sin(p.frameCount * 0.1 + sheep.id) * 2;
+      p.fill(0, 0, 0, 100); p.text('🐑', sheep.x, sheep.y + 10);
+      p.fill(255, 255, 255); p.text('🐑', sheep.x, sheep.y + bob);
+    }
+  }
+
+  function drawSacrificeButton() {
+    if (!STATE.isNight || STATE.godAlpha < 50 || STATE.nightCompleted) return;
+    let t = STATE.godAlpha / 255;
+    let x = SACRIFICE_BTN.x, y = SACRIFICE_BTN.y, w = SACRIFICE_BTN.w, h = SACRIFICE_BTN.h;
+    STATE.sacrificeBtnHover = p.mouseX > x - w/2 && p.mouseX < x + w/2 && p.mouseY > y - h/2 && p.mouseY < y + h/2;
+    let glowIntensity = STATE.sacrificeBtnHover ? 1 : 0.5;
+    let pulse = 0.5 + 0.5 * Math.sin(p.frameCount * 0.08);
+    for (let i = 4; i >= 0; i--) {
+      let glowSize = 1 + i * 0.2;
+      p.noStroke();
+      p.fill(200, 40, 40, t * 40 * glowIntensity * (1 - i * 0.2) * pulse);
+      p.ellipse(x, y, w * glowSize, h * glowSize);
+    }
+    let btnColor = STATE.sacrificeBtnHover ? [220, 50, 50] : [180, 40, 40];
+    p.fill(btnColor[0], btnColor[1], btnColor[2], t * 220);
+    p.rect(x - w/2, y - h/2, w, h, 10);
+    p.fill(255, 255, 255, t * 60); p.rect(x - w/2 + 5, y - h/2 + 5, w - 10, h/2 - 5, 8);
+    p.fill(255, 255, 255, t * 255); p.textSize(18); p.textAlign(p.CENTER);
+    p.text('SACRIFICE', x, y + 8);
+    p.fill(255, 200, 200, t * 200); p.textSize(14); p.text(STATE.sheepOnAltar.length + ' sheep ready', x, y + 28);
+  }
+
+  function handleSacrificeButton() {
+    if (!STATE.isNight || STATE.godAlpha < 50 || STATE.nightCompleted) return;
+    let x = SACRIFICE_BTN.x, y = SACRIFICE_BTN.y, w = SACRIFICE_BTN.w, h = SACRIFICE_BTN.h;
+    if (p.mouseIsPressed && STATE.sacrificeBtnHover && STATE.sheepOnAltar.length > 0) STATE.sacrificeBtnPressed = true;
+    if (!p.mouseIsPressed && STATE.sacrificeBtnPressed && STATE.sheepOnAltar.length > 0) { STATE.sacrificeBtnPressed = false; performSacrifice(); }
+    if (!p.mouseIsPressed && !STATE.sacrificeBtnHover) STATE.sacrificeBtnPressed = false;
+  }
+
+  function drawCompleteButton() {
+    if (!STATE.isNight || STATE.godAlpha < 50 || STATE.nightCompleted) return;
+    let t = STATE.godAlpha / 255;
+    let x = COMPLETE_BTN.x, y = COMPLETE_BTN.y, w = COMPLETE_BTN.w, h = COMPLETE_BTN.h;
+    STATE.completeBtnHover = p.mouseX > x - w/2 && p.mouseX < x + w/2 &&
+                              p.mouseY > y - h/2 && p.mouseY < y + h/2;
+    let pulse = 0.6 + 0.4 * Math.sin(p.frameCount * 0.06);
+    let col = STATE.completeBtnHover ? [80, 200, 120] : [50, 150, 90];
+    // Glow
+    p.noStroke();
+    p.fill(col[0], col[1], col[2], t * 35 * pulse);
+    p.ellipse(x, y, w * 1.6, h * 1.6);
+    // Button body
+    p.fill(col[0], col[1], col[2], t * 210);
+    p.rect(x - w/2, y - h/2, w, h, 10);
+    // Sheen
+    p.fill(255, 255, 255, t * 50);
+    p.rect(x - w/2 + 5, y - h/2 + 5, w - 10, h/2 - 5, 8);
+    // Label
+    p.fill(255, 255, 255, t * 255);
+    p.textSize(18); p.textAlign(p.CENTER);
+    p.text('COMPLETE', x, y + 8);
+    p.fill(200, 255, 220, t * 190);
+    p.textSize(13);
+    p.text('done for tonight', x, y + 27);
+  }
+
+  function handleCompleteButton() {
+    if (!STATE.isNight || STATE.godAlpha < 50 || STATE.nightCompleted) return;
+    if (!p.mouseIsPressed || !STATE.completeBtnHover) return;
+    // Only register on the press-release cycle to avoid repeat triggers
+    STATE._completePressActive = true;
+  }
+
+  function performSacrifice() {
+    if (STATE.sheepOnAltar.length === 0) return;
+    let sacrificed = STATE.sheepOnAltar.length;
+    for (let sheep of STATE.sheepOnAltar) {
+      sheep.onAltar = false;
+      let index = STATE.sheep.indexOf(sheep);
+      if (index > -1) STATE.sheep.splice(index, 1);
+    }
+    STATE.livestock -= sacrificed;
+    STATE.sheepOnAltar = [];
+    STATE.offeringsMadeThisNight += sacrificed;
+    STATE.totalSacrificed += sacrificed;
+
+    if (STATE.offeringsMadeThisNight >= STATE.offeringsRequired) STATE.nightSatisfied = true;
+    
+    let gain = Math.floor(1 + STATE.favor/18 + STATE.templeLevel*0.5) * sacrificed;
+    STATE.crystals += gain;
+    
+    let favorTable = [0, 0, 0, 1, 2, 3, 5];
+    let favorGain = favorTable[p.min(sacrificed, 6)] || sacrificed;
+    STATE.favor = p.min(100, STATE.favor + favorGain);
+    
+    if (STATE.favor >= 100 && STATE.templeLevel === 3 && STATE.totalSacrificed >= 25) { 
+      STATE.screen = 'win'; 
+      STATE.screenTimer = 0; 
+    }
+    
+    spawnParticle(ALTAR.x, ALTAR.y - 50, C.red, '💀');
+    spawnOfferingBurst(gain);
+    rebalanceSheep();
+    saveGame();
+  }
+
+  function rebalanceSheep() {
+    for (let i = 0; i < STATE.sheep.length; i++) {
+      let sheep = STATE.sheep[i];
+      if (!sheep.onAltar) {
+        sheep.x = BASE_W * 0.35 + (i % 5) * 70 + p.random(-20, 20);
+        sheep.y = BASE_H * 0.82 + Math.floor(i / 5) * 35 + p.random(-10, 10);
+      }
+    }
+  }
+
+  p.draw = function() {
+    if (STATE.screen === 'dead') { drawDeathScreen(); return; }
+    if (STATE.screen === 'win')  { drawWinScreen();   return; }
+
+    updateTime(); updateGod(); updateFarm(); updateFavorColor(); updateParticles(); updateSheep();
+    updateGoblin(); processPunishQueue(); handleSheepInput(); handleSacrificeButton(); handleCompleteButton(); handleMerchantInput();
+
+    drawSky(); drawStars(); drawClouds(); drawHills(); drawTemple(); drawFarm();
+    drawGoblin(); drawAltar(); drawSheep(); drawSheepOnAltar(); drawGod();
+    drawParticles(); drawSacrificeButton(); drawCompleteButton(); drawMerchantWindow(); drawUI(); drawDebugStats();
+  };
+
+  function updateTime() {
+    let hour = STATE.useRealTime ? new Date().getHours() : STATE.debugHour;
+    STATE.prevIsNight = STATE.isNight;
+    STATE.isNight = (hour >= 20 || hour < 6);
+    STATE.skyTransition = p.lerp(STATE.skyTransition, STATE.isNight ? 1 : 0, 0.004);
+    if (STATE.isNight && !STATE.prevIsNight) {
+      STATE.offeringsMadeThisNight = 0; STATE.nightSatisfied = false; STATE.offerCooldown = 0;
+      STATE.offeringsRequired = OFFER_DEMAND(STATE.favor); STATE.nightCompleted = false; STATE.godDismissed = false; MERCHANT_WINDOW.open = false; initSheep();
+    }
+    if (!STATE.isNight && STATE.prevIsNight) { STATE.dayCount++; resolveNight(); advanceConstruction(); }
+  }
+
+  function resolveNight() {
+    let req = STATE.offeringsRequired, made = STATE.offeringsMadeThisNight;
+    if (made >= req) STATE.missedNights = 0;
+    else if (made === 0) { STATE.missedNights++; STATE.favor = p.max(0, STATE.favor - (12 + STATE.missedNights * 4)); enqueuePunish('both'); }
+    else { let sf = (req - made) / req; STATE.favor = p.max(0, STATE.favor - Math.floor(sf * 20)); if (STATE.favorColor <= 0) enqueuePunish('one'); }
+    checkDeath();
+    saveGame();
+  }
+
+  function advanceConstruction() {
+    if (STATE.farmUnderConstruction) { STATE.farmLevel = STATE.farmConstructTarget; STATE.farmUnderConstruction = false; STATE.farmDamage = 0; spawnParticle(W(0.18), H(0.65), C.farmOk, '🏗'); }
+    if (STATE.templeUnderConstruction) { STATE.templeLevel = STATE.templeConstructTarget; STATE.templeUnderConstruction = false; STATE.templeDamage = 0; spawnParticle(W(TEMPLE_ANCHOR.rx), H(0.65), C.purple, '⛩'); }
+    saveGame();
+  }
+
+  function updateGod() {
+    STATE.godPulse += 0.018;
+    if (STATE.godDismissed) {
+      STATE.godAlpha = p.max(0, STATE.godAlpha - 2);
+      STATE.godScale = p.lerp(STATE.godScale, 0, 0.02);
+    } else {
+      STATE.godAlpha = p.lerp(STATE.godAlpha, STATE.isNight ? 255 : 0, 0.008);
+      STATE.godScale = p.lerp(STATE.godScale, STATE.isNight ? 1 : 0, 0.007);
+    }
+    if (STATE.offerCooldown > 0) STATE.offerCooldown--;
+    if (STATE.isNight && STATE.templeLevel > 0 && STATE.templeDamage < 2)
+      STATE.favor = p.min(100, STATE.favor + TEMPLE_FAVOR[STATE.templeLevel]);
+    checkDeath();
+  }
+
+  function updateFarm() {
+    if (!STATE.isNight && STATE.farmLevel > 0 && !STATE.farmUnderConstruction && STATE.farmDamage < 2) {
+      STATE.cultivationTimer++;
+      if (STATE.cultivationTimer >= FARM_RATE[STATE.farmLevel]) {
+        STATE.cultivationTimer = 0;
+        if (STATE.livestock < FARM_CAP[STATE.farmLevel]) {
+          STATE.livestock++;
+          STATE.sheep.push(createSheep(STATE.sheep.length));
+          spawnParticle(W(0.20) + p.random(-20,20), H(0.75), C.farmOk, '🐑');
+        }
+      }
+    }
+  }
+
+  function updateFavorColor() { STATE.favorDisplay = p.lerp(STATE.favorDisplay, STATE.favor, 0.04); STATE.favorColor = STATE.favor >= 65 ? 1 : STATE.favor <= 35 ? -1 : 0; }
+  function enqueuePunish(t) { STATE.punishQueue.push({ target: t, timer: 60 }); }
+  function processPunishQueue() { STATE.punishQueue = STATE.punishQueue.filter(q => { if (--q.timer <= 0) { executePunish(q.target); return false; } return true; }); }
+  function executePunish(target) {
+    let hit = target === 'both' ? ['farm','temple'] : target === 'one' ? [Math.random()<0.5?'farm':'temple'] : [target];
+    for (let t of hit) {
+      if (t === 'farm' && STATE.farmLevel > 0 && !STATE.farmUnderConstruction) {
+        STATE.farmDamage++; spawnParticle(W(0.20), H(0.60), C.red, '⚡');
+        if (STATE.farmDamage >= 2) { STATE.farmLevel = Math.max(0,STATE.farmLevel-1); STATE.farmDamage=0; }
+      }
+      if (t === 'temple' && STATE.templeLevel > 0 && !STATE.templeUnderConstruction) {
+        STATE.templeDamage++; spawnParticle(W(TEMPLE_ANCHOR.rx), H(0.60), C.red, '⚡');
+        if (STATE.templeDamage >= 2) { STATE.templeLevel = Math.max(0,STATE.templeLevel-1); STATE.templeDamage=0; }
+      }
+    }
+  }
+  function checkDeath() { if (STATE.favor <= 0 && STATE.screen === 'game') { STATE.favor = 0; STATE.screen = 'dead'; STATE.screenTimer = 0; } }
+
+  function spawnOfferingBurst(crystals) {
+    let X = W(0.5), Y = H(0.55), gc = godColor();
+    for (let i = 0; i < 18; i++) STATE.particles.push({ x: X + p.random(-30, 30), y: Y + p.random(-20, 20), vx: p.random(-3, 3), vy: p.random(-5, -0.4), life: 1, col: gc, emoji: null, size: p.random(5, 12) });
+    spawnParticle(X, Y - 22, C.crystal, '💎');
+  }
+
+  function drawSky() {
+    let t = STATE.skyTransition;
+    p.noStroke();
+    // 6 colour stops cover the sky area (0 → BASE_H*0.68).
+    // Visually indistinguishable from 100 strips but far cheaper.
+    const STOPS = 6;
+    let skyH = BASE_H * 0.68;
+    let bandH = skyH / STOPS;
+    for (let i = 0; i < STOPS; i++) {
+      let inter = i / (STOPS - 1);
+      let r = p.lerp(p.lerp(C.skyDayTop[0], C.skyDayBottom[0], inter), p.lerp(C.skyNightTop[0], C.skyNightBot[0], inter), t);
+      let g = p.lerp(p.lerp(C.skyDayTop[1], C.skyDayBottom[1], inter), p.lerp(C.skyNightTop[1], C.skyNightBot[1], inter), t);
+      let b = p.lerp(p.lerp(C.skyDayTop[2], C.skyDayBottom[2], inter), p.lerp(C.skyNightTop[2], C.skyNightBot[2], inter), t);
+      p.fill(r, g, b);
+      p.rect(0, i * bandH, BASE_W, bandH + 1); // +1 closes sub-pixel gaps
+    }
+    if (t < 0.8) {
+      let ga = p.map(t, 0, 0.8, 60, 0);
+      for (let i = 0; i < 5; i++) {
+        p.fill(255, 220, 150, ga * (1 - i * 0.15));
+        p.ellipse(BASE_W * 0.5, BASE_H * 0.65, BASE_W * (0.4 + i * 0.12), 60 + i * 15);
+      }
+    }
+  }
+
+  function drawClouds() {
+    let t = STATE.skyTransition;
+    let overW = BASE_W * 1.12;
+    let overH = BASE_H * 1.12;
+    let offX = BASE_W * 0.5 - overW * 0.5;
+    let offY = BASE_H * 0.5 - overH * 0.5;
+    let drift = Math.sin(p.frameCount * 0.0008) * 18;
+
+    // Skip entirely if image would be invisible (alpha < 3/255)
+    if (IMAGES.clouds.day && (1 - t) > 0.012) {
+      p.tint(255, (1 - t) * 255);
+      p.image(IMAGES.clouds.day, offX + drift, offY, overW, overH);
+      p.noTint();
+    }
+    if (IMAGES.clouds.night && t > 0.012) {
+      p.tint(255, t * 255);
+      p.image(IMAGES.clouds.night, offX - drift, offY, overW, overH);
+      p.noTint();
+    }
+  }
+
+  function buildStarField() { STATE.starField = []; for (let i = 0; i < 200; i++) STATE.starField.push({ x: p.random(BASE_W), y: p.random(BASE_H * 0.62), r: p.random(0.4, 2), phase: p.random(p.TWO_PI), spd: p.random(0.02, 0.06) }); }
+  function drawStars() { let t = STATE.skyTransition; if (t < 0.15) return; for (let s of STATE.starField) { s.phase += s.spd; let a = t * (0.5 + 0.5 * Math.sin(s.phase)) * 200; p.noStroke(); p.fill(C.star[0], C.star[1], C.star[2], a); p.ellipse(s.x, s.y, s.r * 2); } }
+
+  function drawHills() {
+    let t = STATE.skyTransition;
+    if (IMAGES.hills.day || IMAGES.hills.night) {
+      if (IMAGES.hills.day && (1 - t) > 0.012) { p.tint(255, (1 - t) * 255); p.image(IMAGES.hills.day, 0, 0, BASE_W, BASE_H); p.noTint(); }
+      if (IMAGES.hills.night && t > 0.012)      { p.tint(255, t * 255);       p.image(IMAGES.hills.night, 0, 0, BASE_W, BASE_H); p.noTint(); }
+      return;
+    }
+    let groundY = H(0.70); p.noStroke();
+    for (let i = 0; i < 6; i++) { let hillX = (i / 5) * BASE_W, hillW = BASE_W * 0.42, hillH = BASE_H * 0.22, hillY = groundY + hillH * 0.35; let r = p.lerp(C.groundBack[0], C.groundNight[0], t), g = p.lerp(C.groundBack[1], C.groundNight[1], t), b = p.lerp(C.groundBack[2], C.groundNight[2], t); p.fill(r, g, b); p.ellipse(hillX, hillY, hillW, hillH); }
+    for (let i = 0; i < 8; i++) { let hillX = (i / 7) * BASE_W, hillW = BASE_W * 0.35, hillH = BASE_H * 0.20, hillY = groundY + hillH * 0.40; let r = p.lerp(C.groundFront[0], C.groundNight[0], t), g = p.lerp(C.groundFront[1], C.groundNight[1], t), b = p.lerp(C.groundFront[2], C.groundNight[2], t); p.fill(r, g, b); p.ellipse(hillX, hillY, hillW, hillH); }
+    let r = p.lerp(C.groundFront[0], C.groundNight[0], t), g = p.lerp(C.groundFront[1], C.groundNight[1], t), b = p.lerp(C.groundFront[2], C.groundNight[2], t);
+    p.fill(r, g, b); p.rect(0, groundY + BASE_H * 0.08, BASE_W, BASE_H - groundY);
+  }
+
+  function drawFarm() {
+    let lv = STATE.farmLevel, uc = STATE.farmUnderConstruction;
+    let tgt = STATE.farmConstructTarget, dmg = STATE.farmDamage;
+
+    if (lv === 0 && !uc) {
+      let a = FARM_ANCHORS[0];
+      p.fill(80, 60, 40, 70); p.noStroke();
+      p.rect(W(a.rx) - 40, H(a.ry) - 6, 80, 10, 2);
+      p.fill(160, 130, 90, 90); p.textSize(16); p.textAlign(p.CENTER);
+      p.text('empty farm plot', W(a.rx), H(a.ry) + 22);
+      return;
+    }
+
+    let count = uc ? tgt : lv;
+    for (let i = 0; i < count; i++) {
+      let anch = FARM_ANCHORS[i];
+      let X = W(anch.rx), Y = H(anch.ry);
+      let sz = FARM_SIZES[i];
+      let isNewest = (i === count - 1);
+
+      if (uc && isNewest) {
+        drawConstructionMarker(X, Y, sz.w, sz.h, 'FARM Lv.' + (i + 1));
+      } else {
+        let img = IMAGES.farm[i + 1];
+        drawBuildingImg(img, X, Y, sz.w, sz.h, '🏠', dmg > 0 && isNewest ? C.red : C.farmOk);
+        if (dmg > 0 && isNewest) {
+          p.fill(220, 50, 30, 55 + 40 * Math.sin(p.frameCount * 0.15)); p.noStroke();
+          p.rect(X - sz.w / 2, Y - sz.h, sz.w, sz.h, 4);
+          p.fill(220, 80, 50, 200); p.textSize(14); p.textAlign(p.CENTER);
+          p.text('DMG ' + dmg + '/2', X, Y + 20);
+        }
+      }
+    }
+  }
+
+  function drawTemple() {
+    let lv = STATE.templeLevel, uc = STATE.templeUnderConstruction;
+    let tgt = STATE.templeConstructTarget, dmg = STATE.templeDamage;
+    let X = W(TEMPLE_ANCHOR.rx), Y = H(TEMPLE_ANCHOR.ry), sz = TEMPLE_SIZE;
+
+    if (lv === 0 && !uc) {
+      return;
+    }
+
+    let displayLv = uc ? tgt : lv;
+    if (uc) {
+      drawConstructionMarker(X, Y, sz.w, sz.h, 'TEMPLE Lv.' + tgt);
+    } else {
+      drawBuildingImg(IMAGES.temple[displayLv], X, Y, sz.w, sz.h, '⛩', dmg > 0 ? C.red : C.purple);
+      if (dmg > 0) {
+        p.fill(220, 50, 30, 55 + 40 * Math.sin(p.frameCount * 0.15)); p.noStroke();
+        p.rect(X - sz.w / 2, Y - sz.h, sz.w, sz.h, 4);
+        p.fill(220, 80, 50, 200); p.textSize(14); p.textAlign(p.CENTER);
+        p.text('DMG ' + dmg + '/2', X, Y + 20);
+      }
+    }
+    p.fill(...(dmg > 0 ? C.red : C.purple), 190); p.textSize(13); p.textAlign(p.CENTER);
+    p.text(uc ? 'constructing...' : templeLevelName(displayLv), X, Y + 36);
+  }
+
+  function drawBuildingImg(img, X, Y, w, h, icon, col) {
+    if (img) {
+      p.imageMode(p.CENTER);
+      let imgAspect = img.width / img.height;
+      let drawW, drawH;
+      if (imgAspect > w / h) { drawW = w; drawH = w / imgAspect; }
+      else                   { drawH = h; drawW = h * imgAspect; }
+      p.image(img, X, Y - drawH / 2, drawW, drawH);
+      p.imageMode(p.CORNER);
+    } else {
+      p.fill(col[0] * 0.35, col[1] * 0.35, col[2] * 0.35, 220); p.noStroke();
+      p.rect(X - w / 2, Y - h, w, h, 4);
+      p.fill(col[0] * 0.2, col[1] * 0.2, col[2] * 0.2, 220);
+      p.triangle(X - w / 2 - 8, Y - h, X + w / 2 + 8, Y - h, X, Y - h - 28);
+      p.fill(255, 255, 255, 180); p.textSize(24); p.textAlign(p.CENTER);
+      p.text(icon, X, Y - h / 2 + 10);
+    }
+  }
+
+  function drawConstructionMarker(X, Y, w, h, label) {
+    p.fill(80, 60, 30, 190); p.noStroke();
+    p.rect(X - w / 2, Y - h, w, h, 4);
+    p.stroke(140, 110, 60, 170); p.strokeWeight(2);
+    for (let i = 0; i < 3; i++)
+      p.line(X - w / 2 + 10 + i * (w / 3 - 5), Y - h + 8, X - w / 2 + 10 + i * (w / 3 - 5), Y - 8);
+    p.line(X - w / 2 + 6, Y - h * 0.5, X + w / 2 - 6, Y - h * 0.5);
+    p.noStroke();
+    p.fill(255, 200, 80, 210); p.textSize(24); p.textAlign(p.CENTER);
+    p.text('🏗', X, Y - h * 0.45);
+    p.fill(200, 170, 100, 185); p.textSize(13); p.text(label, X, Y + 20);
+    p.text('builds at dawn', X, Y + 36);
+  }
+
+  // Pick the right god image based on favor state.
+  // Falls back gracefully if an image hasn't loaded yet.
+  function currentGodImage() {
+    if (STATE.favorColor === -1) return IMAGES.god.mad      || IMAGES.god.neutral || IMAGES.god.satisfied;
+    if (STATE.favorColor ===  1) return IMAGES.god.satisfied || IMAGES.god.neutral || IMAGES.god.mad;
+    return IMAGES.god.neutral || IMAGES.god.satisfied || IMAGES.god.mad;
+  }
+
+  function drawGod() {
+    if (STATE.godAlpha < 8) return;
+    let X = W(0.5), Y = H(0.35), sc = STATE.godScale, al = STATE.godAlpha;
+    let pulse = Math.sin(STATE.godPulse) * 0.055, gc = godColor();
+
+    p.push();
+    p.translate(X, Y);
+    p.scale(sc + pulse);
+
+    // Existing glow rings — kept exactly as they were
+    for (let i = 4; i >= 0; i--) {
+      p.noStroke();
+      p.fill(gc[0], gc[1], gc[2], al * 0.05 * (5 - i) * (1 + Math.sin(STATE.godPulse * 0.6 + i) * 0.3));
+      p.ellipse(0, 0, 300 + i * 65, 360 + i * 65);
+    }
+
+    // God image drawn on top of glow, centred at origin (inside the push/scale)
+    let godImg = currentGodImage();
+    if (godImg) {
+      p.tint(255, al);
+      p.imageMode(p.CENTER);
+      // Draw at a fixed canvas size — tweak these numbers if you want it bigger/smaller
+      p.image(godImg, 0, 0, 520, 680);
+      p.noTint();
+      p.imageMode(p.CORNER);
+    }
+
+    p.pop();
+  }
+
+  function godColor() {
+    return STATE.favorColor === 1 ? C.green : STATE.favorColor === -1 ? C.red : C.orange;
+  }
+
+  function spawnParticle(x, y, col, emoji) { STATE.particles.push({ x, y, vx: p.random(-2, 2), vy: p.random(-4, -0.5), life: 1, col, emoji, size: p.random(10, 16) }); }
+  function updateParticles() { STATE.particles = STATE.particles.filter(pt => pt.life > 0.01); for (let pt of STATE.particles) { pt.x += pt.vx; pt.y += pt.vy; pt.vy += 0.08; pt.life -= 0.016; } }
+  function drawParticles() { for (let pt of STATE.particles) { let a = pt.life * 255; if (pt.emoji) { p.textSize(pt.size + 6); p.textAlign(p.CENTER); p.fill(255, 255, 255, a); p.text(pt.emoji, pt.x, pt.y); } else { p.noStroke(); p.fill(pt.col[0], pt.col[1], pt.col[2], a * 0.8); p.ellipse(pt.x, pt.y, pt.size); } } }
+
+  function drawUI() {
+    let bW = BASE_W, bH = BASE_H; p.fill(0, 0, 0, 140); p.noStroke(); p.rect(0, 0, bW, 62);
+    let hr = new Date().getHours(), mn = String(new Date().getMinutes()).padStart(2, '0');
+    let timeStr = STATE.useRealTime ? `${hr}:${mn}` : `${STATE.debugHour}:00`;
+    p.fill(190, 165, 120, 210); p.textSize(14); p.textAlign(p.LEFT); p.text('Day ' + STATE.dayCount + '   ' + (STATE.isNight ? '🌑 NIGHT' : '☀ DAY') + '  ' + timeStr, 20, 24);
+    drawStat(20, 48, '🐑', STATE.livestock, [220, 200, 160, 210]); drawStat(130, 48, '💎', STATE.crystals, [130, 200, 255, 210]); drawStat(240, 48, '🪙', STATE.money, [255, 200, 60, 210]); drawStat(360, 48, '⛩', '+' + ((TEMPLE_FAVOR[STATE.templeLevel] * 1000 | 0) / 10) + '%/s', [160, 130, 220, 210]);
+    let mw = 240, mh = 18, mx = bW * 0.5 - mw / 2, my = 20, gc = godColor();
+    p.noStroke(); p.fill(0, 0, 0, 170); p.rect(mx - 2, my - 2, mw + 4, mh + 4, 4);
+    p.fill(gc[0] * 0.25, gc[1] * 0.25, gc[2] * 0.25, 200); p.rect(mx, my, mw, mh, 3);
+    p.fill(...gc, 215); p.rect(mx, my, mw * (STATE.favorDisplay / 100), mh, 3);
+    p.fill(255, 255, 255, 150); p.textSize(11); p.textAlign(p.CENTER); p.text('FAVOR', mx + mw / 2, my + 13);
+    let fLbl = STATE.favorColor === 1 ? 'PLEASED' : STATE.favorColor === -1 ? 'WRATHFUL' : 'WATCHING';
+    p.fill(...gc, 200); p.textSize(11); p.text(fLbl + '  ' + Math.floor(STATE.favorDisplay) + '%', mx + mw / 2, my + mh + 15);
+    if (STATE.isNight) { let req = STATE.offeringsRequired, made = STATE.offeringsMadeThisNight; p.fill(0, 0, 0, 130); p.rect(mx - 2, my + mh + 19, mw + 4, 16, 3); for (let i = 0; i < req; i++) { p.fill(i < made ? [...gc, 220] : [60, 60, 60, 160]); p.rect(mx + i * (mw / req) + 2, my + mh + 21, (mw / req) - 4, 12, 2); } p.fill(200, 180, 140, 160); p.textSize(11); p.textAlign(p.CENTER); p.text('offerings tonight: ' + made + '/' + req, mx + mw / 2, my + mh + 50); }
+    if (STATE.isNight && STATE.godAlpha > 100) { let msgs = ['Drag sheep to the altar.', 'The void hungers.', 'Your flock trembles.', STATE.favor < 30 ? 'Its patience is spent...' : 'It is... waiting.', STATE.favor > 70 ? 'You have its favour.' : 'Feed it more.', STATE.templeLevel > 0 ? 'Your altar pleases it.' : 'Build it a house.']; p.fill(...gc, STATE.godAlpha * 0.35); p.textSize(15); p.textAlign(p.CENTER); p.text(msgs[Math.floor(p.frameCount / 280) % msgs.length], bW / 2, bH * 0.72); }
+    p.fill(160, 130, 90, 70); p.textSize(12); p.textAlign(p.RIGHT); p.text("THE SHEPHERD'S BARGAIN", bW - 18, 22);
+  }
+  function drawStat(x, y, icon, val, col) { p.fill(...col); p.textSize(13); p.textAlign(p.LEFT); p.text(icon + ' ' + val, x, y); }
+
+  function drawDeathScreen() { STATE.screenTimer++; p.fill(0, 0, 0, 230); p.noStroke(); p.rect(0, 0, BASE_W, BASE_H); let winW = 700, winH = 500, winX = BASE_W/2 - winW/2, winY = BASE_H/2 - winH/2; p.fill(40, 20, 20, 255); p.rect(winX, winY, winW, winH, 20); p.stroke(180, 60, 60); p.strokeWeight(5); p.noFill(); p.rect(winX, winY, winW, winH, 20); p.noStroke(); p.fill(220, 60, 60); p.textSize(48); p.textAlign(p.CENTER); p.text('DEVOURED', winX + winW/2, winY + 100); p.fill(200, 150, 130); p.textSize(22); p.text('Your favour ran dry.', winX + winW/2, winY + 180); p.text('The god consumed what remained.', winX + winW/2, winY + 220); let btnW = 250, btnH = 60, btnX = winX + winW/2 - btnW/2, btnY = winY + 320; p.fill(180, 60, 60); p.rect(btnX, btnY, btnW, btnH, 10); p.fill(255, 255, 255); p.textSize(20); p.text('Click to Begin Again', winX + winW/2, btnY + 38); }
+  function drawWinScreen() { STATE.screenTimer++; p.fill(0, 0, 0, 230); p.noStroke(); p.rect(0, 0, BASE_W, BASE_H); let winW = 700, winH = 500, winX = BASE_W/2 - winW/2, winY = BASE_H/2 - winH/2; p.fill(20, 40, 30, 255); p.rect(winX, winY, winW, winH, 20); p.stroke(80, 220, 130); p.strokeWeight(5); p.noFill(); p.rect(winX, winY, winW, winH, 20); p.noStroke(); p.fill(80, 220, 130); p.textSize(48); p.textAlign(p.CENTER); p.text('IT IS SATISFIED', winX + winW/2, winY + 100); p.fill(180, 230, 200); p.textSize(22); p.text('Your offerings were sufficient.', winX + winW/2, winY + 180); p.text('The god departs. The nights are quiet.', winX + winW/2, winY + 220); let btnW = 250, btnH = 60, btnX = winX + winW/2 - btnW/2, btnY = winY + 320; p.fill(80, 180, 120); p.rect(btnX, btnY, btnW, btnH, 10); p.fill(255, 255, 255); p.textSize(20); p.text('Play Again', winX + winW/2, btnY + 38); }
+
+  function drawDebugStats() { let el = document.getElementById('debug-stats'); if (!el) return; let hasSave = !!localStorage.getItem(SAVE_KEY); el.innerHTML = [`<div class="stat">favor: ${Math.floor(STATE.favor)}</div>`,`<div class="stat">🐑${STATE.livestock} 💎${STATE.crystals} 🪙${STATE.money}</div>`,`<div class="stat">farm: lv${STATE.farmLevel} temple: lv${STATE.templeLevel}</div>`,`<div class="stat">day: ${STATE.dayCount} night: ${STATE.isNight}</div>`,`<div class="stat">on altar: ${STATE.sheepOnAltar.length}/${STATE.offeringsRequired}</div>`,`<div class="stat">total donated: ${STATE.totalSacrificed}</div>`,`<div class="stat" style="color:${hasSave?'#88ff88':'#ff8888'}">${hasSave?'💾 save exists':'no save'}</div>`].join(''); }
+
+  p.mouseClicked = function() {
+    if (STATE.screen === 'dead' || STATE.screen === 'win') { resetGame(); return; }
+    // Complete button — fires on click, no double-trigger risk
+    if (STATE.isNight && STATE.godAlpha >= 50 && !STATE.nightCompleted && STATE.completeBtnHover) {
+      STATE.nightCompleted = true;
+      STATE.godDismissed = true;
+      // Any sheep still on the altar get sacrificed automatically
+      if (STATE.sheepOnAltar.length > 0) performSacrifice();
+      saveGame();
+    }
+  };
+  function resetGame() { localStorage.removeItem(SAVE_KEY); Object.assign(STATE, { screen: 'game', screenTimer: 0, favor: 25, favorDisplay: 25, favorColor: 0, livestock: 6, crystals: 0, money: 0, farmLevel: 1, farmDamage: 0, farmUnderConstruction: false, farmConstructTarget: 1, cultivationTimer: 0, templeLevel: 0, templeDamage: 0, templeUnderConstruction: false, templeConstructTarget: 1, offeringsMadeThisNight: 0, offeringsRequired: 1, offerCooldown: 0, nightSatisfied: false, nightCompleted: false, godDismissed: false, missedNights: 0, godAlpha: 0, godScale: 0, dayCount: 1, totalSacrificed: 0, particles: [], punishQueue: [], sheep: [], draggedSheep: null, sheepOnAltar: [], sacrificeBtnHover: false, sacrificeBtnPressed: false, completeBtnHover: false, goblinHover: false, btnPressed: null }); MERCHANT_WINDOW.open = false; MERCHANT_WINDOW.fade = 0; buildStarField(); initSheep(); }
+
+  function farmLevelName(lv) { return ['', 'Dirt Pen', 'Wooden Barn', 'Stone Farmstead'][lv] || ''; }
+  function templeLevelName(lv) { return ['', 'Stone Altar', 'Open Shrine', 'Sealed Temple'][lv] || ''; }
+
+  p.setTime = (t) => { STATE.useRealTime = false; STATE.debugHour = t === 'night' ? 22 : 10; };
+  p.addFavor = (n) => { STATE.favor = p.constrain(STATE.favor + n, 0, 100); };
+  p.addLivestock = (n) => { STATE.livestock = Math.max(0, STATE.livestock + n); initSheep(); };
+  p.addCrystals = (n) => { STATE.crystals = Math.max(0, STATE.crystals + n); };
+  p.addMoney = (n) => { STATE.money = Math.max(0, STATE.money + n); };
+  p.advanceDay = () => { STATE.prevIsNight = true; STATE.isNight = false; resolveNight(); advanceConstruction(); STATE.dayCount++; };
+  p.triggerDeath = () => { STATE.favor = 0; checkDeath(); };
+  p.clearSave = () => { localStorage.removeItem(SAVE_KEY); console.log('Save cleared.'); };
+
+});
+
+function clearSaveAndReload() {
+  localStorage.removeItem('shepherds_bargain_save');
+  window.location.reload();
+}
+</script>
+</body>
+</html>
