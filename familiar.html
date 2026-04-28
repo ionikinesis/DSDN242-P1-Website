@@ -85,21 +85,22 @@ new p5(function(p) {
   };
 
   p.preload = function() {
-    IMAGES.hills.day    = p.loadImage('assets/Hills day.png');
-    IMAGES.hills.night  = p.loadImage('assets/Hills night.png');
-    IMAGES.clouds.day   = p.loadImage('assets/Clouds day.png');
-    IMAGES.clouds.night = p.loadImage('assets/Clouds night.png');
-    IMAGES.farm[1]      = p.loadImage('assets/Farm lvl 1.PNG');
-    IMAGES.farm[2]      = p.loadImage('assets/Farm lvl 2.PNG');
-    IMAGES.farm[3]      = p.loadImage('assets/Farm lvl 3.PNG');
-    IMAGES.temple[1]    = p.loadImage('assets/Temple lvl 1.PNG');
-    IMAGES.temple[2]    = p.loadImage('assets/Temple lvl 2.PNG');
-    IMAGES.temple[3]    = p.loadImage('assets/Temple lvl 3.PNG');
-    IMAGES.goblin       = p.loadImage('assets/Goblin.PNG');
-    IMAGES.god.mad       = p.loadImage('assets/God mad.png');
-    IMAGES.god.neutral   = p.loadImage('assets/God neutral.png');
-    IMAGES.god.satisfied = p.loadImage('assets/God satisfied.png');
+    IMAGES.hills.day    = p.loadImage('assets/hills-day.png');
+    IMAGES.hills.night  = p.loadImage('assets/hills-night.png');
+    IMAGES.clouds.day   = p.loadImage('assets/clouds-day.png');
+    IMAGES.clouds.night = p.loadImage('assets/clouds-night.png');
+    IMAGES.farm[1]      = p.loadImage('assets/farm-lvl-1.png');
+    IMAGES.farm[2]      = p.loadImage('assets/farm-lvl-2.png');
+    IMAGES.farm[3]      = p.loadImage('assets/farm-lvl-3.png');
+    IMAGES.temple[1]    = p.loadImage('assets/temple-lvl-1.png');
+    IMAGES.temple[2]    = p.loadImage('assets/temple-lvl-2.png');
+    IMAGES.temple[3]    = p.loadImage('assets/temple-lvl-3.png');
+    IMAGES.goblin       = p.loadImage('assets/goblin.png');
+    IMAGES.god.mad      = p.loadImage('assets/god-mad.png');
+    IMAGES.god.neutral  = p.loadImage('assets/god-neutral.png');
+    IMAGES.god.satisfied= p.loadImage('assets/god-satisfied.png');
   };
+
 
   const FARM_COSTS   = { 1: 0,  2: 60,  3: 200 };
   const TEMPLE_COSTS = { 1: 80, 2: 200, 3: 500 };
@@ -253,14 +254,26 @@ new p5(function(p) {
   function fitCanvas() {
     let wrap = document.getElementById('canvas-wrap');
     let cvs = p.canvas;
+    
+    // SAFETY CHECK: If canvas doesn't exist yet, stop here.
+    if (!cvs) return; 
+
     let scaleX = window.innerWidth / BASE_W;
     let scaleY = window.innerHeight / BASE_H;
     let scale = Math.min(scaleX, scaleY);
+    
+    // Prevent scale from being 0 or negative
+    if (scale <= 0) scale = 1; 
+
     cvs.style.width = (BASE_W * scale) + 'px';
     cvs.style.height = (BASE_H * scale) + 'px';
-    wrap.style.width = (BASE_W * scale) + 'px';
-    wrap.style.height = (BASE_H * scale) + 'px';
+    
+    if (wrap) {
+        wrap.style.width = (BASE_W * scale) + 'px';
+        wrap.style.height = (BASE_H * scale) + 'px';
+    }
   }
+
   
   p.windowResized = function() { 
     fitCanvas(); 
